@@ -30,6 +30,10 @@ android {
 
 dependencies {
     implementation(libs.androidx.annotation)
+    implementation(libs.sword.collections)
+    implementation(libs.sword.database)
+    implementation(project(":dbSchema"))
+    implementation(project(":dbManager"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

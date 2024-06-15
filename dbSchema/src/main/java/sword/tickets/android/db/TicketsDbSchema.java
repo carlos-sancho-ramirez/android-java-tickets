@@ -62,6 +62,10 @@ public final class TicketsDbSchema implements DbSchema {
     private TicketsDbSchema() {
     }
 
+    public int currentSchemaVersionCode() {
+        return 1;
+    }
+
     @NonNull
     @Override
     public ImmutableList<DbTable> tables() {

@@ -23,3 +23,4 @@ dependencyResolutionManagement {
 rootProject.name = "Tickets"
 include(":app")
 include(":dbSchema")
+include(":dbManager")
