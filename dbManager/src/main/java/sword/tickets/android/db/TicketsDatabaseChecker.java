@@ -20,7 +20,7 @@ import static sword.tickets.android.db.PreconditionUtils.ensureNonNull;
 public class TicketsDatabaseChecker<TicketId> implements TicketsChecker<TicketId> {
 
     @NonNull
-    private final Database _db;
+    final Database _db;
 
     @NonNull
     private final IntSetter<TicketId> _ticketIdManager;
@@ -42,7 +42,7 @@ public class TicketsDatabaseChecker<TicketId> implements TicketsChecker<TicketId
             while (result.hasNext()) {
                 final List<DbValue> row = result.next();
                 final TicketId id = _ticketIdManager.getKeyFromDbValue(row.get(0));
-                final String name = row.get(1).toString();
+                final String name = row.get(1).toText();
                 map.put(id, name);
             }
         }

@@ -21,7 +21,11 @@ public final class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
         final ImmutableList<String> tickets = DbManager.getInstance().getManager().getAllTickets().toList();
         this.<ListView>findViewById(R.id.listView).setAdapter(new MainAdapter(tickets));
     }
