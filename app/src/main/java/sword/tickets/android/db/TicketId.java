@@ -1,10 +1,12 @@
 package sword.tickets.android.db;
 
+import sword.database.DbIdentifiableQueryBuilder;
+
 import androidx.annotation.NonNull;
 
 import static sword.tickets.android.PreconditionUtils.ensureValidArguments;
 
-public final class TicketId {
+public final class TicketId implements IdWhereInterface {
     final int key;
 
     public TicketId(int key) {
@@ -34,5 +36,10 @@ public final class TicketId {
     @Override
     public String toString() {
         return "TicketId(" + key + ")";
+    }
+
+    @Override
+    public void where(int columnIndex, DbIdentifiableQueryBuilder builder) {
+        builder.where(columnIndex, key);
     }
 }

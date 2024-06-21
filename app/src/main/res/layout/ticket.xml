@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/infoPanel"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/ticketPadding">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ticketNameLabel"/>
+
+        <TextView
+            android:id="@+id/ticketNameField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/ticketFieldMarginStart"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ticketEntryMarginTop"
+            android:text="@string/ticketDescriptionLabel"/>
+
+        <TextView
+            android:id="@+id/ticketDescriptionField"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="@dimen/ticketFieldMarginStart"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/ticketNotFoundErrorTextView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/ticketNotFound"
+        android:visibility="gone"/>
+</FrameLayout>

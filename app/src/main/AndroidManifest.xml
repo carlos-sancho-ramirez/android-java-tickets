@@ -20,6 +20,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activities.TicketActivity"/>
         <activity android:name=".activities.NewTicketActivity"/>
     </application>
 </manifest>

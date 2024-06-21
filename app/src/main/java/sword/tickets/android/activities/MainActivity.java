@@ -4,13 +4,16 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 
 import sword.collections.ImmutableList;
+import sword.collections.ImmutableMap;
 import sword.tickets.android.DbManager;
 import sword.tickets.android.R;
+import sword.tickets.android.db.TicketId;
 import sword.tickets.android.list.adapters.MainAdapter;
 
 public final class MainActivity extends Activity {
@@ -26,8 +29,11 @@ public final class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        final ImmutableList<String> tickets = DbManager.getInstance().getManager().getAllTickets().toList();
-        this.<ListView>findViewById(R.id.listView).setAdapter(new MainAdapter(tickets));
+        final ImmutableMap<TicketId, String> tickets = DbManager.getInstance().getManager().getAllTickets();
+        final ListView listView = findViewById(R.id.listView);
+        listView.setAdapter(new MainAdapter(tickets.toList()));
+        listView.setOnItemClickListener((parent, view, position, id) ->
+                TicketActivity.open(this, tickets.keyAt(position)));
     }
 
     @Override

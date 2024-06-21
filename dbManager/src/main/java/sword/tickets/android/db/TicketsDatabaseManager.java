@@ -8,7 +8,7 @@ import sword.database.DbInsertQuery;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
 import sword.tickets.android.db.TicketsDbSchema.TicketsTable;
 
-public class TicketsDatabaseManager<TicketId> extends TicketsDatabaseChecker<TicketId> implements TicketsManager<TicketId> {
+public class TicketsDatabaseManager<TicketId extends IdWhereInterface> extends TicketsDatabaseChecker<TicketId> implements TicketsManager<TicketId> {
     public TicketsDatabaseManager(@NonNull Database db, @NonNull IntSetter<TicketId> ticketIdManager) {
         super(db, ticketIdManager);
     }

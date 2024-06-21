@@ -3,4 +3,5 @@
     <string name="optionNew">New</string>
     <string name="ticketNameLabel">Name</string>
     <string name="ticketDescriptionLabel">Description</string>
+    <string name="ticketNotFound">Ticket not found</string>
 </resources>

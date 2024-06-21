@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="mainEntryPadding">8dp</dimen>
+    <dimen name="ticketPadding">8dp</dimen>
+    <dimen name="ticketEntryMarginTop">8dp</dimen>
+    <dimen name="ticketFieldMarginStart">4dp</dimen>
 </resources>

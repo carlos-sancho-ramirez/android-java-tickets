@@ -14,10 +14,11 @@ import sword.database.DbResult;
 import sword.database.DbValue;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
 import sword.tickets.android.db.TicketsDbSchema.TicketsTable;
+import sword.tickets.android.db.models.Ticket;
 
 import static sword.tickets.android.db.PreconditionUtils.ensureNonNull;
 
-public class TicketsDatabaseChecker<TicketId> implements TicketsChecker<TicketId> {
+public class TicketsDatabaseChecker<TicketId extends IdWhereInterface> implements TicketsChecker<TicketId> {
 
     @NonNull
     final Database _db;
@@ -48,5 +49,25 @@ public class TicketsDatabaseChecker<TicketId> implements TicketsChecker<TicketId
         }
 
         return map.toImmutable();
+    }
+
+    @Override
+    public Ticket getTicket(@NonNull TicketId ticketId) {
+        final TicketsTable table = Tables.tickets;
+        final DbQuery query = new DbQueryBuilder(table)
+                .where(table.getIdColumnIndex(), ticketId)
+                .select(table.getNameColumnIndex(), table.getDescriptionColumnIndex());
+
+        try (DbResult result = _db.select(query)) {
+            if (result.hasNext()) {
+                final List<DbValue> row = result.next();
+                final String name = row.get(0).toText();
+                final String description = row.get(1).toText();
+                return new Ticket(name, description);
+            }
+            else {
+                return null;
+            }
+        }
     }
 }
