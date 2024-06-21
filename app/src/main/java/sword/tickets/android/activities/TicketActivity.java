@@ -13,6 +13,7 @@ import sword.tickets.android.R;
 import sword.tickets.android.db.TicketId;
 import sword.tickets.android.db.TicketIdBundler;
 import sword.tickets.android.db.models.Ticket;
+import sword.tickets.android.layout.TicketLayoutForActivity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,16 +45,16 @@ public final class TicketActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.ticket);
+        final TicketLayoutForActivity layout = TicketLayoutForActivity.attach(this);
 
         final Ticket ticket = DbManager.getInstance().getManager().getTicket(getTicketId());
         if (ticket == null) {
-            findViewById(R.id.ticketNotFoundErrorTextView).setVisibility(View.VISIBLE);
+            layout.ticketNotFoundErrorTextView().setVisibility(View.VISIBLE);
         }
         else {
-            this.<TextView>findViewById(R.id.ticketNameField).setText(ticket.name);
-            this.<TextView>findViewById(R.id.ticketDescriptionField).setText(ticket.description);
-            findViewById(R.id.infoPanel).setVisibility(View.VISIBLE);
+            layout.ticketNameField().setText(ticket.name);
+            layout.ticketDescriptionField().setText(ticket.description);
+            layout.infoPanel().setVisibility(View.VISIBLE);
         }
     }
 }

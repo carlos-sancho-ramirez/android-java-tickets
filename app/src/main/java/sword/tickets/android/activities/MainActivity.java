@@ -14,23 +14,26 @@ import sword.collections.ImmutableMap;
 import sword.tickets.android.DbManager;
 import sword.tickets.android.R;
 import sword.tickets.android.db.TicketId;
+import sword.tickets.android.layout.MainLayoutForActivity;
 import sword.tickets.android.list.adapters.MainAdapter;
 
 public final class MainActivity extends Activity {
 
     private static final int REQUEST_CODE_NEW_TICKET = 1;
 
+    private MainLayoutForActivity _layout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        _layout = MainLayoutForActivity.attach(this);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         final ImmutableMap<TicketId, String> tickets = DbManager.getInstance().getManager().getAllTickets();
-        final ListView listView = findViewById(R.id.listView);
+        final ListView listView = _layout.listView();
         listView.setAdapter(new MainAdapter(tickets.toList()));
         listView.setOnItemClickListener((parent, view, position, id) ->
                 TicketActivity.open(this, tickets.keyAt(position)));

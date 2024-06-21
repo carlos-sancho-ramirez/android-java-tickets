@@ -21,6 +21,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Tickets"
+include(":appLayoutBinders")
 include(":app")
 include(":dbSchema")
 include(":dbManager")
