@@ -4,4 +4,7 @@
     <string name="ticketNameLabel">Name</string>
     <string name="ticketDescriptionLabel">Description</string>
     <string name="ticketNotFound">Ticket not found</string>
+    <string name="optionEdit">Edit</string>
+    <string name="buttonSave">Save</string>
+    <string name="unableToUpdateTicket">Unable to update ticket</string>
 </resources>

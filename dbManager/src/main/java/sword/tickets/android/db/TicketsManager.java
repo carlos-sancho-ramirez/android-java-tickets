@@ -1,5 +1,9 @@
 package sword.tickets.android.db;
 
+import androidx.annotation.NonNull;
+import sword.tickets.android.db.models.Ticket;
+
 public interface TicketsManager<TicketId> extends TicketsChecker<TicketId> {
     void newTicket(String name, String description);
+    boolean updateTicket(@NonNull TicketId ticketId, @NonNull Ticket ticket);
 }

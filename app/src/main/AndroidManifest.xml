@@ -22,5 +22,6 @@
 
         <activity android:name=".activities.TicketActivity"/>
         <activity android:name=".activities.NewTicketActivity"/>
+        <activity android:name=".activities.EditTicketActivity"/>
     </application>
 </manifest>

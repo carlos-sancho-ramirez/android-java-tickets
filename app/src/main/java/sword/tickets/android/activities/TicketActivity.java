@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,6 +24,8 @@ import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
 
 public final class TicketActivity extends Activity {
+
+    private static final int REQUEST_CODE_EDIT_TICKET = 1;
 
     private interface ArgKeys {
         String TICKET_ID = "ticketId";
@@ -55,6 +59,24 @@ public final class TicketActivity extends Activity {
             layout.ticketNameField().setText(ticket.name);
             layout.ticketDescriptionField().setText(ticket.description);
             layout.infoPanel().setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        getMenuInflater().inflate(R.menu.ticket, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.optionEdit) {
+            EditTicketActivity.open(this, REQUEST_CODE_EDIT_TICKET, getTicketId());
+            return true;
+        }
+        else {
+            return super.onOptionsItemSelected(item);
         }
     }
 }
