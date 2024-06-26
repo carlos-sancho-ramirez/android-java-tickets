@@ -3,7 +3,7 @@ package sword.tickets.android.db;
 import androidx.annotation.NonNull;
 
 import sword.collections.ImmutableMap;
-import sword.tickets.android.db.models.Ticket;
+import sword.tickets.android.models.Ticket;
 
 public interface TicketsChecker<TicketId> {
     @NonNull

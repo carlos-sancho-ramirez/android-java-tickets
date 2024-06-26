@@ -14,7 +14,7 @@ import sword.database.DbResult;
 import sword.database.DbValue;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
 import sword.tickets.android.db.TicketsDbSchema.TicketsTable;
-import sword.tickets.android.db.models.Ticket;
+import sword.tickets.android.models.Ticket;
 
 import static sword.tickets.android.db.PreconditionUtils.ensureNonNull;
 

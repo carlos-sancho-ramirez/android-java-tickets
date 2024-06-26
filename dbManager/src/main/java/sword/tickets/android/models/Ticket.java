@@ -1,4 +1,4 @@
-package sword.tickets.android.db.models;
+package sword.tickets.android.models;
 
 public final class Ticket {
     public final String name;

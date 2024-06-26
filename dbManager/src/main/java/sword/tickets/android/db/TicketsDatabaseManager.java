@@ -8,7 +8,7 @@ import sword.database.DbInsertQuery;
 import sword.database.DbUpdateQuery;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
 import sword.tickets.android.db.TicketsDbSchema.TicketsTable;
-import sword.tickets.android.db.models.Ticket;
+import sword.tickets.android.models.Ticket;
 
 public class TicketsDatabaseManager<TicketId extends IdInterface> extends TicketsDatabaseChecker<TicketId> implements TicketsManager<TicketId> {
     public TicketsDatabaseManager(@NonNull Database db, @NonNull IntSetter<TicketId> ticketIdManager) {

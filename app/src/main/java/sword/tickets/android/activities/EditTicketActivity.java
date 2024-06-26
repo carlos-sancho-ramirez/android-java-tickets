@@ -12,7 +12,7 @@ import sword.tickets.android.DbManager;
 import sword.tickets.android.R;
 import sword.tickets.android.db.TicketId;
 import sword.tickets.android.db.TicketIdBundler;
-import sword.tickets.android.db.models.Ticket;
+import sword.tickets.android.models.Ticket;
 import sword.tickets.android.layout.EditTicketLayoutForActivity;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
