@@ -37,6 +37,9 @@ public final class TicketActivity extends Activity {
         context.startActivity(intent);
     }
 
+    private TicketLayoutForActivity _layout;
+    private boolean _uiJustUpdated;
+
     @NonNull
     private TicketId getTicketId() {
         final TicketId id = TicketIdBundler.readAsIntentExtra(getIntent(), ArgKeys.TICKET_ID);
@@ -44,19 +47,31 @@ public final class TicketActivity extends Activity {
         return id;
     }
 
+    private void updateModelAndUi() {
+        final Ticket ticket = DbManager.getInstance().getManager().getTicket(getTicketId());
+        if (ticket == null) {
+            _layout.ticketNotFoundErrorTextView().setVisibility(View.VISIBLE);
+        }
+        else {
+            _layout.ticketNameField().setText(ticket.name);
+            _layout.ticketDescriptionField().setText(ticket.description);
+            _layout.infoPanel().setVisibility(View.VISIBLE);
+            _uiJustUpdated = true;
+        }
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final TicketLayoutForActivity layout = TicketLayoutForActivity.attach(this);
+        _layout = TicketLayoutForActivity.attach(this);
+        updateModelAndUi();
+    }
 
-        final Ticket ticket = DbManager.getInstance().getManager().getTicket(getTicketId());
-        if (ticket == null) {
-            layout.ticketNotFoundErrorTextView().setVisibility(View.VISIBLE);
-        }
-        else {
-            layout.ticketNameField().setText(ticket.name);
-            layout.ticketDescriptionField().setText(ticket.description);
-            layout.infoPanel().setVisibility(View.VISIBLE);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!_uiJustUpdated) {
+            updateModelAndUi();
         }
     }
 
@@ -76,5 +91,11 @@ public final class TicketActivity extends Activity {
         else {
             return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        _uiJustUpdated = false;
+        super.onPause();
     }
 }

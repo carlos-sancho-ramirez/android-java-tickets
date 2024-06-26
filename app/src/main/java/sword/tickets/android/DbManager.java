@@ -25,6 +25,7 @@ import sword.database.DbResult;
 import sword.database.DbTable;
 import sword.database.DbUpdateQuery;
 import sword.database.DbValue;
+import sword.tickets.android.annotation.TestSwitcher;
 import sword.tickets.android.db.TicketsDbManagerImpl;
 import sword.tickets.android.db.TicketsDbSchema;
 import sword.tickets.android.sqlite.SQLiteDbQuery;
@@ -50,7 +51,8 @@ public final class DbManager extends SQLiteOpenHelper {
         _instance = new DbManager(context);
     }
 
-    private ManagerDatabase _managerDatabase;
+    @TestSwitcher
+    Database _database;
     private TicketsDbManagerImpl _ticketsManager;
 
     private DbManager(@NonNull Context context) {
@@ -59,11 +61,11 @@ public final class DbManager extends SQLiteOpenHelper {
 
     @NonNull
     public Database getDatabase() {
-        if (_managerDatabase == null) {
-            _managerDatabase = new ManagerDatabase();
+        if (_database == null) {
+            _database = new ManagerDatabase();
         }
 
-        return _managerDatabase;
+        return _database;
     }
 
     @NonNull

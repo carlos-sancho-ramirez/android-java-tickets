@@ -1,35 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/ticketNameLabel"/>
+        android:orientation="vertical">
 
-    <EditText
-        android:id="@+id/ticketNameField"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:singleLine="true"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ticketNameLabel"/>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/ticketDescriptionLabel"/>
+        <EditText
+            android:id="@+id/ticketNameField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="true"/>
 
-    <EditText
-        android:id="@+id/ticketDescriptionField"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="top"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ticketDescriptionLabel"/>
 
-    <Button
-        android:id="@+id/submitButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/optionNew"/>
-</LinearLayout>
+        <EditText
+            android:id="@+id/ticketDescriptionField"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="top"/>
+
+        <Button
+            android:id="@+id/submitButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/optionNew"/>
+    </LinearLayout>
+</ScrollView>
