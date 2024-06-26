@@ -2,11 +2,9 @@ package sword.tickets.android.db;
 
 import androidx.annotation.NonNull;
 
-import sword.collections.ImmutableIntKeyMap;
 import sword.collections.ImmutableMap;
 import sword.collections.List;
 import sword.collections.MutableHashMap;
-import sword.collections.MutableIntKeyMap;
 import sword.collections.MutableMap;
 import sword.database.Database;
 import sword.database.DbQuery;
@@ -34,7 +32,7 @@ public class TicketsDatabaseChecker<TicketId extends IdWhereInterface> implement
 
     @NonNull
     @Override
-    public ImmutableMap<TicketId, String> getAllTickets() {
+    public final ImmutableMap<TicketId, String> getAllTickets() {
         final TicketsTable table = Tables.tickets;
         final DbQuery query = new DbQuery.Builder(table)
                 .select(table.getIdColumnIndex(), table.getNameColumnIndex());
@@ -52,7 +50,7 @@ public class TicketsDatabaseChecker<TicketId extends IdWhereInterface> implement
     }
 
     @Override
-    public Ticket getTicket(@NonNull TicketId ticketId) {
+    public final Ticket getTicket(@NonNull TicketId ticketId) {
         final TicketsTable table = Tables.tickets;
         final DbQuery query = new DbQueryBuilder(table)
                 .where(table.getIdColumnIndex(), ticketId)

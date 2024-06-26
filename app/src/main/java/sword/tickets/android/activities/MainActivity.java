@@ -4,12 +4,10 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 
-import sword.collections.ImmutableList;
 import sword.collections.ImmutableMap;
 import sword.tickets.android.DbManager;
 import sword.tickets.android.R;

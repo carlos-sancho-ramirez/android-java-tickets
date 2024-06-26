@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import sword.tickets.android.DbManager;
-import sword.tickets.android.R;
 import sword.tickets.android.layout.NewTicketLayoutForActivity;
 
 public final class NewTicketActivity extends android.app.Activity {

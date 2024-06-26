@@ -2,6 +2,7 @@ import sword.tickets.android.gradle.tasks.CreateLayoutWrappersTask
 
 plugins {
     alias(libs.plugins.android.application)
+    checkstyle
 }
 
 android {
@@ -47,6 +48,11 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 }
 
+tasks.register("checkstyleMain", Checkstyle::class.java) {
+    source("src/main/java")
+    classpath = files()
+}
+
 afterEvaluate {
     tasks.register("createLayoutWrappers", CreateLayoutWrappersTask::class.java) {
         resourcesDir = project.file("src/main/res")
@@ -64,4 +70,6 @@ afterEvaluate {
 
         compileTask.dependsOn( "createLayoutWrappers")
     }
+
+    tasks.findByName("check")!!.dependsOn("checkstyleMain")
 }

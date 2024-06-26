@@ -3,9 +3,7 @@ package sword.tickets.android.db;
 import androidx.annotation.NonNull;
 
 import sword.database.Database;
-import sword.database.DbIndex;
 import sword.database.DbInsertQuery;
-import sword.database.DbUpdateQuery;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
 import sword.tickets.android.db.TicketsDbSchema.TicketsTable;
 import sword.tickets.android.models.Ticket;
@@ -16,7 +14,7 @@ public class TicketsDatabaseManager<TicketId extends IdInterface> extends Ticket
     }
 
     @Override
-    public void newTicket(String name, String description) {
+    public final void newTicket(String name, String description) {
         final TicketsTable table = Tables.tickets;
         _db.insert(new DbInsertQuery.Builder(table)
                 .put(table.getNameColumnIndex(), name)
@@ -26,7 +24,7 @@ public class TicketsDatabaseManager<TicketId extends IdInterface> extends Ticket
     }
 
     @Override
-    public boolean updateTicket(@NonNull TicketId ticketId, @NonNull Ticket ticket) {
+    public final boolean updateTicket(@NonNull TicketId ticketId, @NonNull Ticket ticket) {
         final TicketsTable table = Tables.tickets;
         return _db.update(new DbUpdateQueryBuilder(table)
                 .where(table.getIdColumnIndex(), ticketId)
