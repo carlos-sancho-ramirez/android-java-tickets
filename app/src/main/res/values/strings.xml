@@ -10,4 +10,6 @@
     <string name="unableToUpdateTicket">Unable to update ticket</string>
     <string name="unableToDeleteTickets">Unable to delete all selected tickets</string>
     <string name="deletedTicketsOkFeedback">Tickets deleted</string>
+    <string name="deleteTicketConfirmationDialogMessage">%d ticket(s) will be deleted. Would you like to continue?</string>
+    <string name="optionCancel">Cancel</string>
 </resources>

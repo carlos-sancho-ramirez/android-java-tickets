@@ -1,6 +1,7 @@
 package sword.tickets.android.activities;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -107,7 +108,56 @@ public final class MainActivity extends Activity {
         updateModelAndUi();
         if (!_state.selected.isEmpty()) {
             startActionMode(new ActionModeCallback());
+            if (_state.displayingDeleteConfirmationDialog) {
+                displayDeleteConfirmationDialog();
+            }
         }
+    }
+
+    private void displayDeleteConfirmationDialog() {
+        _state.displayingDeleteConfirmationDialog = true;
+        new AlertDialog.Builder(this)
+                .setMessage(getString(R.string.deleteTicketConfirmationDialogMessage, _state.selected.size()))
+                .setPositiveButton(R.string.optionDelete, (dialog, which) -> {
+                    deleteSelectedTickets();
+                })
+                .setNegativeButton(R.string.optionCancel, (dialog, which) -> {
+                    // Nothing to be done
+                })
+                .setOnDismissListener(dialog -> {
+                    _state.displayingDeleteConfirmationDialog = false;
+                })
+                .create().show();
+    }
+
+    private void deleteSelectedTickets() {
+        boolean somethingDeleted = false;
+        boolean errorFound = false;
+        for (int position : _state.selected) {
+            if (DbManager.getInstance().getManager().deleteTicket(_tickets.keyAt(position))) {
+                somethingDeleted = true;
+            }
+            else {
+                errorFound = true;
+            }
+        }
+
+        if (errorFound) {
+            Toast.makeText(MainActivity.this, R.string.unableToDeleteTickets, Toast.LENGTH_SHORT).show();
+        }
+        else if (somethingDeleted) {
+            Toast.makeText(MainActivity.this, R.string.deletedTicketsOkFeedback, Toast.LENGTH_SHORT).show();
+        }
+
+        _state.selected.clear();
+        if (somethingDeleted) {
+            updateModelAndUi();
+        }
+        else {
+            _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+        }
+
+        _actionMode.finish();
     }
 
     private final class ActionModeCallback implements ActionMode.Callback {
@@ -127,33 +177,7 @@ public final class MainActivity extends Activity {
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             if (item.getItemId() == R.id.optionDelete) {
-                boolean somethingDeleted = false;
-                boolean errorFound = false;
-                for (int position : _state.selected) {
-                    if (DbManager.getInstance().getManager().deleteTicket(_tickets.keyAt(position))) {
-                        somethingDeleted = true;
-                    }
-                    else {
-                        errorFound = true;
-                    }
-                }
-
-                if (errorFound) {
-                    Toast.makeText(MainActivity.this, R.string.unableToDeleteTickets, Toast.LENGTH_SHORT).show();
-                }
-                else if (somethingDeleted) {
-                    Toast.makeText(MainActivity.this, R.string.deletedTicketsOkFeedback, Toast.LENGTH_SHORT).show();
-                }
-
-                _state.selected.clear();
-                if (somethingDeleted) {
-                    updateModelAndUi();
-                }
-                else {
-                    _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
-                }
-
-                _actionMode.finish();
+                displayDeleteConfirmationDialog();
                 return true;
             }
 
@@ -211,6 +235,7 @@ public final class MainActivity extends Activity {
     private static final class State implements Parcelable {
         @NonNull
         final MutableBitSet selected;
+        boolean displayingDeleteConfirmationDialog;
 
         State(@NonNull MutableBitSet selected) {
             ensureNonNull(selected);
@@ -236,6 +261,8 @@ public final class MainActivity extends Activity {
                     }
                     dest.writeInt(value);
                 }
+
+                dest.writeBoolean(displayingDeleteConfirmationDialog);
             }
         }
 
@@ -258,7 +285,12 @@ public final class MainActivity extends Activity {
                     }
                 }
 
-                return new State(selected);
+                final State state = new State(selected);
+                if (pageCount != 0) {
+                    state.displayingDeleteConfirmationDialog = in.readBoolean();
+                }
+
+                return state;
             }
 
             @Override
