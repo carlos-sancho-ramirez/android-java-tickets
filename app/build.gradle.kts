@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.androidx.annotation)
     implementation(libs.sword.collections)
     implementation(libs.sword.database)
+    implementation(project(":collectionExtensions"))
     implementation(project(":dbSchema"))
     implementation(project(":dbManager"))
     implementation(project(":appLayoutBinders"))

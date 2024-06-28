@@ -6,5 +6,8 @@
     <string name="ticketNotFound">Ticket not found</string>
     <string name="optionEdit">Edit</string>
     <string name="buttonSave">Save</string>
+    <string name="optionDelete">Delete</string>
     <string name="unableToUpdateTicket">Unable to update ticket</string>
+    <string name="unableToDeleteTickets">Unable to delete all selected tickets</string>
+    <string name="deletedTicketsOkFeedback">Tickets deleted</string>
 </resources>

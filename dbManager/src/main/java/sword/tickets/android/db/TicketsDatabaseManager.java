@@ -32,4 +32,11 @@ public class TicketsDatabaseManager<TicketId extends IdInterface> extends Ticket
                 .put(table.getDescriptionColumnIndex(), ticket.description)
                 .build());
     }
+
+    public final boolean deleteTicket(@NonNull TicketId ticketId) {
+        final TicketsTable table = Tables.tickets;
+        return _db.delete(new DbDeleteQueryBuilder(table)
+                .where(table.getIdColumnIndex(), ticketId)
+                .build());
+    }
 }

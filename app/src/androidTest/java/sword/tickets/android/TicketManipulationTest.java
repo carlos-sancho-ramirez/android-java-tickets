@@ -59,7 +59,7 @@ public final class TicketManipulationTest {
 
                 onView(withId(R.id.submitButton)).perform(scrollTo(), click());
 
-                onView(withId(R.id.listView)).check(matches(withChild(withText("My new issue"))));
+                onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My new issue")))));
 
                 Espresso.pressBackUnconditionally(); // Closes the list of tickets
                 assertScenarionDestroyed(scenario);
@@ -93,7 +93,7 @@ public final class TicketManipulationTest {
                 onView(withId(R.id.ticketDescriptionField)).check(matches(withText("This is my new ticket")));
                 Espresso.pressBack(); // Closes the ticket details
 
-                onView(withId(R.id.listView)).check(matches(withChild(withText("My issue"))));
+                onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My issue")))));
 
                 Espresso.pressBackUnconditionally(); // Closes the list of tickets
                 assertScenarionDestroyed(scenario);
