@@ -15,10 +15,13 @@ import androidx.test.espresso.Espresso;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.longClick;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.hasChildCount;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withChild;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
@@ -57,8 +60,14 @@ public final class TicketManipulationTest {
                 onView(withId(R.id.ticketDescriptionField)).perform(scrollTo(), click(), typeText("This is my new ticket"));
                 Espresso.pressBack(); // Closes the keyboard
 
-                onView(withId(R.id.submitButton)).perform(scrollTo(), click());
+                // Required in some devices to effectively click on the button
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
+                onView(withId(R.id.submitButton)).perform(scrollTo(), click());
                 onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My new issue")))));
 
                 Espresso.pressBackUnconditionally(); // Closes the list of tickets
@@ -87,6 +96,13 @@ public final class TicketManipulationTest {
                 onView(withId(R.id.ticketDescriptionField)).perform(scrollTo(), click(), replaceText("This is my new ticket"));
                 Espresso.pressBack(); // Closes the keyboard
 
+                // Required in some devices to effectively click on the button
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
                 onView(withId(R.id.saveButton)).perform(scrollTo(), click());
 
                 onView(withId(R.id.ticketNameField)).check(matches(withText("My issue")));
@@ -94,6 +110,29 @@ public final class TicketManipulationTest {
                 Espresso.pressBack(); // Closes the ticket details
 
                 onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My issue")))));
+
+                Espresso.pressBackUnconditionally(); // Closes the list of tickets
+                assertScenarionDestroyed(scenario);
+            }
+        });
+    }
+
+    @Test
+    public void deleteTicket() {
+        withMemoryDatabase(db -> {
+            DbManager.getInstance().getManager().newTicket("My issue", "This is my new ticket");
+
+            final Context targetContext = ApplicationProvider.getApplicationContext();
+            final Intent intent = new Intent(targetContext, MainActivity.class);
+            try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(intent)) {
+                onView(withText("My issue")).perform(longClick());
+
+                onView(withId(R.id.optionDelete)).perform(click());
+
+                onView(withText(targetContext.getString(R.string.deleteTicketConfirmationDialogMessage, 1))).check(matches(isDisplayed()));
+                onView(withText(R.string.optionDelete)).perform(click());
+
+                onView(withId(R.id.listView)).check(matches(hasChildCount(0)));
 
                 Espresso.pressBackUnconditionally(); // Closes the list of tickets
                 assertScenarionDestroyed(scenario);
