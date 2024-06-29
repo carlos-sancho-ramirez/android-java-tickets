@@ -6,6 +6,8 @@ import android.content.Intent;
 import org.junit.Test;
 
 import sword.tickets.android.activities.MainActivity;
+import sword.tickets.android.db.ProjectId;
+import sword.tickets.android.db.TicketsDbManagerImpl;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
@@ -56,6 +58,18 @@ public final class TicketManipulationTest {
                 Espresso.openActionBarOverflowOrOptionsMenu(targetContext);
                 onView(withText(R.string.optionNew)).perform(click());
 
+                onView(withId(R.id.projectNameField)).perform(scrollTo(), click(), typeText("My project"));
+                Espresso.pressBack(); // Closes the keyboard
+
+                // Required in some devices to effectively click on the button
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                onView(withId(R.id.nextButton)).perform(scrollTo(), click());
+
                 onView(withId(R.id.ticketNameField)).perform(scrollTo(), click(), typeText("My new issue"));
                 onView(withId(R.id.ticketDescriptionField)).perform(scrollTo(), click(), typeText("This is my new ticket"));
                 Espresso.pressBack(); // Closes the keyboard
@@ -79,7 +93,9 @@ public final class TicketManipulationTest {
     @Test
     public void editTicket() {
         withMemoryDatabase(db -> {
-            DbManager.getInstance().getManager().newTicket("My isue", "Ths is my new ticket");
+            final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
+            final ProjectId projectId = manager.newProject("My project");
+            manager.newTicket("My isue", "Ths is my new ticket", projectId);
 
             final Context targetContext = ApplicationProvider.getApplicationContext();
             final Intent intent = new Intent(targetContext, MainActivity.class);
@@ -120,7 +136,9 @@ public final class TicketManipulationTest {
     @Test
     public void deleteTicket() {
         withMemoryDatabase(db -> {
-            DbManager.getInstance().getManager().newTicket("My issue", "This is my new ticket");
+            final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
+            final ProjectId projectId = manager.newProject("My project");
+            manager.newTicket("My issue", "This is my new ticket", projectId);
 
             final Context targetContext = ApplicationProvider.getApplicationContext();
             final Intent intent = new Intent(targetContext, MainActivity.class);

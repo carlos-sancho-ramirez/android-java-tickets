@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import sword.tickets.android.DbManager;
 import sword.tickets.android.R;
+import sword.tickets.android.db.ProjectId;
 import sword.tickets.android.db.TicketId;
 import sword.tickets.android.db.TicketIdBundler;
 import sword.tickets.android.models.Ticket;
@@ -45,10 +46,13 @@ public final class EditTicketActivity extends Activity {
         final EditTicketLayoutForActivity layout = EditTicketLayoutForActivity.attach(this);
 
         final TicketId ticketId = getTicketId();
+        final Ticket<ProjectId> ticket = DbManager.getInstance().getManager().getTicket(ticketId);
+        ensureValidState(ticket != null);
+
         layout.saveButton().setOnClickListener(v -> {
             final String name = layout.ticketNameField().getText().toString();
             final String description = layout.ticketDescriptionField().getText().toString();
-            if (DbManager.getInstance().getManager().updateTicket(ticketId, new Ticket(name, description))) {
+            if (DbManager.getInstance().getManager().updateTicket(ticketId, new Ticket<>(name, description, ticket.projectId))) {
                 setResult(Activity.RESULT_OK);
                 finish();
             }
@@ -57,7 +61,6 @@ public final class EditTicketActivity extends Activity {
             }
         });
 
-        final Ticket ticket = DbManager.getInstance().getManager().getTicket(ticketId);
         layout.ticketNameField().setText(ticket.name);
         layout.ticketDescriptionField().setText(ticket.description);
     }

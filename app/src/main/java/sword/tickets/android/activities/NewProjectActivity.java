@@ -4,25 +4,22 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import sword.tickets.android.layout.NewTicketLayoutForActivity;
+import sword.tickets.android.layout.NewProjectLayoutForActivity;
 
-import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
 
-public final class NewTicketActivity extends android.app.Activity {
+public final class NewProjectActivity extends Activity {
 
     private interface ArgKeys {
         String CONTROLLER = "controller";
     }
 
     public static void open(@NonNull Activity activity, int requestCode, @NonNull Controller controller) {
-        ensureNonNull(controller);
-        final Intent intent = new Intent(activity, NewTicketActivity.class);
+        final Intent intent = new Intent(activity, NewProjectActivity.class);
         intent.putExtra(ArgKeys.CONTROLLER, controller);
         activity.startActivityForResult(intent, requestCode);
     }
@@ -37,17 +34,20 @@ public final class NewTicketActivity extends android.app.Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final NewTicketLayoutForActivity layout = NewTicketLayoutForActivity.attach(this);
-        final EditText nameField = layout.ticketNameField();
-        final EditText descriptionField = layout.ticketDescriptionField();
-        layout.submitButton().setOnClickListener(v -> {
-            final String name = nameField.getText().toString();
-            final String description = descriptionField.getText().toString();
-            getController().submit(this, name, description);
-        });
+        final NewProjectLayoutForActivity layout = NewProjectLayoutForActivity.attach(this);
+
+        layout.nextButton().setOnClickListener(v ->
+                getController().complete(this, layout.projectNameField().getText().toString()));
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        getController().onActivityResult(this, requestCode, resultCode, data);
     }
 
     public interface Controller extends Parcelable {
-        void submit(@NonNull Activity activity, String name, String description);
+        void onActivityResult(@NonNull Activity activity, int requestCode, int resultCode, Intent data);
+        void complete(@NonNull Activity activity, String name);
     }
 }

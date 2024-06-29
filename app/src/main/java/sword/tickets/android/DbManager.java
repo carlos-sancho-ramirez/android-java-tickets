@@ -53,7 +53,9 @@ public final class DbManager extends SQLiteOpenHelper {
 
     @TestSwitcher
     Database _database;
-    private TicketsDbManagerImpl _ticketsManager;
+
+    @TestSwitcher
+    TicketsDbManagerImpl _ticketsManager;
 
     private DbManager(@NonNull Context context) {
         super(context, DB_NAME, null, TicketsDbSchema.getInstance().currentSchemaVersionCode());

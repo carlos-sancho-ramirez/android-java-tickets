@@ -4,32 +4,51 @@ import androidx.annotation.NonNull;
 
 import sword.database.Database;
 import sword.database.DbInsertQuery;
+import sword.tickets.android.db.TicketsDbSchema.ProjectsTable;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
 import sword.tickets.android.db.TicketsDbSchema.TicketsTable;
 import sword.tickets.android.models.Ticket;
 
-public class TicketsDatabaseManager<TicketId extends IdInterface> extends TicketsDatabaseChecker<TicketId> implements TicketsManager<TicketId> {
-    public TicketsDatabaseManager(@NonNull Database db, @NonNull IntSetter<TicketId> ticketIdManager) {
-        super(db, ticketIdManager);
+import static sword.tickets.android.db.PreconditionUtils.ensureValidState;
+
+public class TicketsDatabaseManager<ProjectId extends IdPutInterface, TicketId extends IdInterface> extends TicketsDatabaseChecker<ProjectId, TicketId> implements TicketsManager<ProjectId, TicketId> {
+    public TicketsDatabaseManager(@NonNull Database db, @NonNull IntSetter<ProjectId> projectIdManager, @NonNull IntSetter<TicketId> ticketIdManager) {
+        super(db, projectIdManager, ticketIdManager);
     }
 
+    @NonNull
     @Override
-    public final void newTicket(String name, String description) {
+    public final ProjectId newProject(String name) {
+        final ProjectsTable table = Tables.projects;
+        final int newId = _db.insert(new DbInsertQuery.Builder(table)
+                .put(table.getNameColumnIndex(), name)
+                .build());
+        ensureValidState(newId != 0);
+        return _projectIdManager.getKeyFromInt(newId);
+    }
+
+    @NonNull
+    @Override
+    public final TicketId newTicket(String name, String description, @NonNull ProjectId projectId) {
         final TicketsTable table = Tables.tickets;
-        _db.insert(new DbInsertQuery.Builder(table)
+        final int newId = _db.insert(new DbInsertQueryBuilder(table)
                 .put(table.getNameColumnIndex(), name)
                 .put(table.getDescriptionColumnIndex(), description)
-                .put(table.getProjectColumnIndex(), 1)
+                .put(table.getProjectColumnIndex(), projectId)
                 .build());
+
+        ensureValidState(newId != 0);
+        return _ticketIdManager.getKeyFromInt(newId);
     }
 
     @Override
-    public final boolean updateTicket(@NonNull TicketId ticketId, @NonNull Ticket ticket) {
+    public final boolean updateTicket(@NonNull TicketId ticketId, @NonNull Ticket<ProjectId> ticket) {
         final TicketsTable table = Tables.tickets;
         return _db.update(new DbUpdateQueryBuilder(table)
                 .where(table.getIdColumnIndex(), ticketId)
                 .put(table.getNameColumnIndex(), ticket.name)
                 .put(table.getDescriptionColumnIndex(), ticket.description)
+                .put(table.getProjectColumnIndex(), ticket.projectId)
                 .build());
     }
 

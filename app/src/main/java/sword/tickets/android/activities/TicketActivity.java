@@ -10,6 +10,7 @@ import android.view.View;
 
 import sword.tickets.android.DbManager;
 import sword.tickets.android.R;
+import sword.tickets.android.db.ProjectId;
 import sword.tickets.android.db.TicketId;
 import sword.tickets.android.db.TicketIdBundler;
 import sword.tickets.android.models.Ticket;
@@ -48,7 +49,7 @@ public final class TicketActivity extends Activity {
     }
 
     private void updateModelAndUi() {
-        final Ticket ticket = DbManager.getInstance().getManager().getTicket(getTicketId());
+        final Ticket<ProjectId> ticket = DbManager.getInstance().getManager().getTicket(getTicketId());
         if (ticket == null) {
             _layout.ticketNotFoundErrorTextView().setVisibility(View.VISIBLE);
         }

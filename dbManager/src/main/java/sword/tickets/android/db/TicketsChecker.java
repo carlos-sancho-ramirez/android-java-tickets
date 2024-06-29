@@ -5,8 +5,12 @@ import androidx.annotation.NonNull;
 import sword.collections.ImmutableMap;
 import sword.tickets.android.models.Ticket;
 
-public interface TicketsChecker<TicketId> {
+public interface TicketsChecker<ProjectId, TicketId> {
     @NonNull
     ImmutableMap<TicketId, String> getAllTickets();
-    Ticket getTicket(@NonNull TicketId id);
+
+    @NonNull
+    ImmutableMap<ProjectId, String> getAllProjects();
+    boolean hasAtLeastOneProject();
+    Ticket<ProjectId> getTicket(@NonNull TicketId id);
 }

@@ -13,6 +13,7 @@ public final class DbManagerTestUtils {
         final Database originalDatabase = dbManager._database;
         final MemoryDatabase database = new MemoryDatabase();
         dbManager._database = database;
+        dbManager._ticketsManager = null;
         try {
             procedure.apply(database);
         }

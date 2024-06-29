@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 
 import sword.collections.ImmutableMap;
 import sword.tickets.android.DbManager;
+import sword.tickets.android.Intentions;
 import sword.tickets.android.R;
 import sword.tickets.android.collections.MutableBitSet;
 import sword.tickets.android.db.TicketId;
@@ -212,7 +213,7 @@ public final class MainActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.optionNew) {
-            NewTicketActivity.open(this, REQUEST_CODE_NEW_TICKET);
+            Intentions.createTicket(this, REQUEST_CODE_NEW_TICKET);
             return true;
         }
         else {
