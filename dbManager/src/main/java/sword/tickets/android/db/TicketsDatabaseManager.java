@@ -37,6 +37,7 @@ public class TicketsDatabaseManager<ProjectId extends IdPutInterface, TicketId e
                 .put(table.getDescriptionColumnIndex(), description)
                 .put(table.getProjectColumnIndex(), projectId)
                 .put(table.getTypeColumnIndex(), type.value)
+                .put(table.getStateColumnIndex(), TicketsDbSchema.TicketState.NOT_STARTED.value)
                 .build());
 
         ensureValidState(newId != 0);

@@ -3,6 +3,7 @@ package sword.tickets.android.db;
 import sword.database.Database;
 import sword.database.DbInsertQuery;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
+import sword.tickets.android.db.TicketsDbSchema.TicketState;
 import sword.tickets.android.db.TicketsDbSchema.TicketType;
 
 import androidx.annotation.NonNull;
@@ -23,6 +24,7 @@ public final class DbFixtures {
                 .put(table.getDescriptionColumnIndex(), description)
                 .put(table.getProjectColumnIndex(), projectId)
                 .put(table.getTypeColumnIndex(), type.value)
+                .put(table.getStateColumnIndex(), TicketState.NOT_STARTED.value)
                 .build());
     }
 

@@ -43,9 +43,22 @@ public final class TicketsDbSchema implements DbSchema {
         }
     }
 
+    public enum TicketState {
+        NOT_STARTED(1),
+        IN_PROGRESS(2),
+        ABANDONED(3),
+        COMPLETED(4);
+
+        public final int value;
+
+        TicketState(int value) {
+            this.value = value;
+        }
+    }
+
     public static final class TicketsTable extends DbTable {
         private TicketsTable() {
-            super("Tickets", new DbIntColumn("project"), new DbTextColumn("name"), new DbTextColumn("description"), new DbIntColumn("type"));
+            super("Tickets", new DbIntColumn("project"), new DbTextColumn("name"), new DbTextColumn("description"), new DbIntColumn("type"), new DbIntColumn("state"));
         }
 
         public int getProjectColumnIndex() {
@@ -62,6 +75,10 @@ public final class TicketsDbSchema implements DbSchema {
 
         public int getTypeColumnIndex() {
             return 4;
+        }
+
+        public int getStateColumnIndex() {
+            return 5;
         }
     }
 
