@@ -47,6 +47,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(testFixtures(project(":dbManager")))
 }
 
 tasks.register("checkstyleMain", Checkstyle::class.java) {

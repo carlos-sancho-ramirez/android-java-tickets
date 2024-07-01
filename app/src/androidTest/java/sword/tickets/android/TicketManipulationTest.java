@@ -32,24 +32,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.junit.Assert.fail;
 import static sword.tickets.android.DbManagerTestUtils.withMemoryDatabase;
+import static sword.tickets.android.db.DbFixtures.newProject;
+import static sword.tickets.android.db.DbFixtures.newTicket;
 
 public final class TicketManipulationTest {
-
-    private static int newProject(@NonNull Database db, String name) {
-        final TicketsDbSchema.ProjectsTable table = Tables.projects;
-        return db.insert(new DbInsertQuery.Builder(table)
-                .put(table.getNameColumnIndex(), name)
-                .build());
-    }
-
-    private static int newTicket(@NonNull Database db, String name, String description, int projectId) {
-        final TicketsDbSchema.TicketsTable table = Tables.tickets;
-        return db.insert(new DbInsertQuery.Builder(table)
-                .put(table.getNameColumnIndex(), name)
-                .put(table.getDescriptionColumnIndex(), description)
-                .put(table.getProjectColumnIndex(), projectId)
-                .build());
-    }
 
     private void assertScenarioDestroyed(@NonNull ActivityScenario<MainActivity> scenario) {
         int retrials = 15;
