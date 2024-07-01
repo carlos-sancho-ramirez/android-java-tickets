@@ -14,6 +14,7 @@ import sword.tickets.android.db.ProjectId;
 import sword.tickets.android.db.TicketId;
 import sword.tickets.android.db.TicketIdBundler;
 import sword.tickets.android.db.TicketsDbManagerImpl;
+import sword.tickets.android.db.TicketsDbSchema;
 
 public final class CreateTicketForNewProjectNewTicketController implements NewTicketActivity.Controller {
 
@@ -24,10 +25,10 @@ public final class CreateTicketForNewProjectNewTicketController implements NewTi
     }
 
     @Override
-    public void submit(@NonNull Activity activity, String name, String description) {
+    public void submit(@NonNull Activity activity, String name, String description, @NonNull TicketsDbSchema.TicketType type) {
         final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
         final ProjectId projectId = manager.newProject(_projectName);
-        final TicketId ticketId = manager.newTicket(name, description, projectId);
+        final TicketId ticketId = manager.newTicket(name, description, projectId, type);
 
         final Intent data = new Intent();
         TicketIdBundler.writeAsIntentExtra(data, ResultKeys.TICKET_ID, ticketId);

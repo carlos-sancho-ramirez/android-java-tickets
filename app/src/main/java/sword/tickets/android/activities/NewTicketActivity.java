@@ -5,11 +5,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.widget.EditText;
+import android.widget.Spinner;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import sword.tickets.android.db.TicketsDbSchema.TicketType;
 import sword.tickets.android.layout.NewTicketLayoutForActivity;
+import sword.tickets.android.list.adapters.TicketTypeAdapter;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
@@ -39,15 +42,19 @@ public final class NewTicketActivity extends android.app.Activity {
         super.onCreate(savedInstanceState);
         final NewTicketLayoutForActivity layout = NewTicketLayoutForActivity.attach(this);
         final EditText nameField = layout.ticketNameField();
+        final Spinner typeField = layout.ticketTypeField();
+        final TicketTypeAdapter adapter = new TicketTypeAdapter();
+        typeField.setAdapter(adapter);
         final EditText descriptionField = layout.ticketDescriptionField();
         layout.submitButton().setOnClickListener(v -> {
             final String name = nameField.getText().toString();
+            final TicketType type = adapter.getItem(typeField.getSelectedItemPosition()).type;
             final String description = descriptionField.getText().toString();
-            getController().submit(this, name, description);
+            getController().submit(this, name, description, type);
         });
     }
 
     public interface Controller extends Parcelable {
-        void submit(@NonNull Activity activity, String name, String description);
+        void submit(@NonNull Activity activity, String name, String description, @NonNull TicketType type);
     }
 }

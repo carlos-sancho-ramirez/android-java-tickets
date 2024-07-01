@@ -6,6 +6,7 @@ import sword.database.Database;
 import sword.database.DbInsertQuery;
 import sword.tickets.android.db.TicketsDbSchema.ProjectsTable;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
+import sword.tickets.android.db.TicketsDbSchema.TicketType;
 import sword.tickets.android.db.TicketsDbSchema.TicketsTable;
 import sword.tickets.android.models.Ticket;
 
@@ -29,12 +30,13 @@ public class TicketsDatabaseManager<ProjectId extends IdPutInterface, TicketId e
 
     @NonNull
     @Override
-    public final TicketId newTicket(String name, String description, @NonNull ProjectId projectId) {
+    public final TicketId newTicket(String name, String description, @NonNull ProjectId projectId, @NonNull TicketType type) {
         final TicketsTable table = Tables.tickets;
         final int newId = _db.insert(new DbInsertQueryBuilder(table)
                 .put(table.getNameColumnIndex(), name)
                 .put(table.getDescriptionColumnIndex(), description)
                 .put(table.getProjectColumnIndex(), projectId)
+                .put(table.getTypeColumnIndex(), type.value)
                 .build());
 
         ensureValidState(newId != 0);

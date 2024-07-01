@@ -3,6 +3,7 @@ package sword.tickets.android.db;
 import sword.database.Database;
 import sword.database.DbInsertQuery;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
+import sword.tickets.android.db.TicketsDbSchema.TicketType;
 
 import androidx.annotation.NonNull;
 
@@ -15,12 +16,13 @@ public final class DbFixtures {
                 .build());
     }
 
-    public static int newTicket(@NonNull Database db, String name, String description, int projectId) {
+    public static int newTicket(@NonNull Database db, String name, String description, int projectId, @NonNull TicketType type) {
         final TicketsDbSchema.TicketsTable table = Tables.tickets;
         return db.insert(new DbInsertQuery.Builder(table)
                 .put(table.getNameColumnIndex(), name)
                 .put(table.getDescriptionColumnIndex(), description)
                 .put(table.getProjectColumnIndex(), projectId)
+                .put(table.getTypeColumnIndex(), type.value)
                 .build());
     }
 

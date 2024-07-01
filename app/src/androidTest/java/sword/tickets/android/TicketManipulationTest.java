@@ -10,6 +10,7 @@ import sword.database.DbInsertQuery;
 import sword.tickets.android.activities.MainActivity;
 import sword.tickets.android.db.TicketsDbSchema;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
+import sword.tickets.android.db.TicketsDbSchema.TicketType;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
@@ -99,7 +100,7 @@ public final class TicketManipulationTest {
     public void createTicketForANewProjectWhenAProjectExists() {
         withMemoryDatabase(db -> {
             final int projectId = newProject(db, "My project");
-            newTicket(db, "My important issue", "This is an issue that must be solved", projectId);
+            newTicket(db, "My important issue", "This is an issue that must be solved", projectId, TicketType.ISSUE);
 
             final Context targetContext = ApplicationProvider.getApplicationContext();
             final Intent intent = new Intent(targetContext, MainActivity.class);
@@ -150,7 +151,7 @@ public final class TicketManipulationTest {
     public void createTicketForAProjectThatAlreadyExists() {
         withMemoryDatabase(db -> {
             final int projectId = newProject(db, "My project");
-            newTicket(db, "My important issue", "This is an issue that must be solved", projectId);
+            newTicket(db, "My important issue", "This is an issue that must be solved", projectId, TicketType.ISSUE);
 
             final Context targetContext = ApplicationProvider.getApplicationContext();
             final Intent intent = new Intent(targetContext, MainActivity.class);
@@ -186,7 +187,7 @@ public final class TicketManipulationTest {
     public void editTicket() {
         withMemoryDatabase(db -> {
             final int projectId = newProject(db, "My project");
-            newTicket(db, "My isue", "Ths is my new ticket", projectId);
+            newTicket(db, "My isue", "Ths is my new ticket", projectId, TicketType.ISSUE);
 
             final Context targetContext = ApplicationProvider.getApplicationContext();
             final Intent intent = new Intent(targetContext, MainActivity.class);
@@ -228,7 +229,7 @@ public final class TicketManipulationTest {
     public void deleteTicket() {
         withMemoryDatabase(db -> {
             final int projectId = newProject(db, "My project");
-            newTicket(db, "My issue", "This is my new ticket", projectId);
+            newTicket(db, "My issue", "This is my new ticket", projectId, TicketType.ISSUE);
 
             final Context targetContext = ApplicationProvider.getApplicationContext();
             final Intent intent = new Intent(targetContext, MainActivity.class);

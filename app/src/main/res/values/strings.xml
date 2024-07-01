@@ -17,4 +17,8 @@
     <string name="optionNext">Next</string>
     <string name="newProjectActivityTitle">Project details</string>
     <string name="newTicketActivityTitle">Ticket details</string>
+    <string name="ticketTypeLabel">Ticket type</string>
+    <string name="ticketTypeNewCapability">New Capability</string>
+    <string name="ticketTypeIssue">Issue</string>
+    <string name="ticketTypeModification">Modification</string>
 </resources>
