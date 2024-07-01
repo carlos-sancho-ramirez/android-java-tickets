@@ -5,9 +5,11 @@ import android.content.Intent;
 
 import org.junit.Test;
 
+import sword.database.Database;
+import sword.database.DbInsertQuery;
 import sword.tickets.android.activities.MainActivity;
-import sword.tickets.android.db.ProjectId;
-import sword.tickets.android.db.TicketsDbManagerImpl;
+import sword.tickets.android.db.TicketsDbSchema;
+import sword.tickets.android.db.TicketsDbSchema.Tables;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
@@ -16,6 +18,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.Espresso;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.longClick;
 import static androidx.test.espresso.action.ViewActions.replaceText;
@@ -32,7 +35,23 @@ import static sword.tickets.android.DbManagerTestUtils.withMemoryDatabase;
 
 public final class TicketManipulationTest {
 
-    private void assertScenarionDestroyed(@NonNull ActivityScenario<MainActivity> scenario) {
+    private static int newProject(@NonNull Database db, String name) {
+        final TicketsDbSchema.ProjectsTable table = Tables.projects;
+        return db.insert(new DbInsertQuery.Builder(table)
+                .put(table.getNameColumnIndex(), name)
+                .build());
+    }
+
+    private static int newTicket(@NonNull Database db, String name, String description, int projectId) {
+        final TicketsDbSchema.TicketsTable table = Tables.tickets;
+        return db.insert(new DbInsertQuery.Builder(table)
+                .put(table.getNameColumnIndex(), name)
+                .put(table.getDescriptionColumnIndex(), description)
+                .put(table.getProjectColumnIndex(), projectId)
+                .build());
+    }
+
+    private void assertScenarioDestroyed(@NonNull ActivityScenario<MainActivity> scenario) {
         int retrials = 15;
         while (scenario.getState() != Lifecycle.State.DESTROYED) {
             if (--retrials >= 0) {
@@ -50,12 +69,12 @@ public final class TicketManipulationTest {
     }
 
     @Test
-    public void createTicket() {
+    public void createFirstTicket() {
         withMemoryDatabase(db -> {
             final Context targetContext = ApplicationProvider.getApplicationContext();
             final Intent intent = new Intent(targetContext, MainActivity.class);
             try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(intent)) {
-                Espresso.openActionBarOverflowOrOptionsMenu(targetContext);
+                openActionBarOverflowOrOptionsMenu(targetContext);
                 onView(withText(R.string.optionNew)).perform(click());
 
                 onView(withId(R.id.projectNameField)).perform(scrollTo(), click(), typeText("My project"));
@@ -85,7 +104,94 @@ public final class TicketManipulationTest {
                 onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My new issue")))));
 
                 Espresso.pressBackUnconditionally(); // Closes the list of tickets
-                assertScenarionDestroyed(scenario);
+                assertScenarioDestroyed(scenario);
+            }
+        });
+    }
+
+    @Test
+    public void createTicketForANewProjectWhenAProjectExists() {
+        withMemoryDatabase(db -> {
+            final int projectId = newProject(db, "My project");
+            newTicket(db, "My important issue", "This is an issue that must be solved", projectId);
+
+            final Context targetContext = ApplicationProvider.getApplicationContext();
+            final Intent intent = new Intent(targetContext, MainActivity.class);
+            try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(intent)) {
+                onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My important issue")))));
+
+                openActionBarOverflowOrOptionsMenu(targetContext);
+                onView(withText(R.string.optionNew)).perform(click());
+                onView(withText("My project")).check(matches(isDisplayed()));
+
+                openActionBarOverflowOrOptionsMenu(targetContext);
+                onView(withText(R.string.optionNew)).perform(click());
+
+                onView(withId(R.id.projectNameField)).perform(scrollTo(), click(), typeText("My new project"));
+                Espresso.pressBack(); // Closes the keyboard
+
+                // Required in some devices to effectively click on the button
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                onView(withId(R.id.nextButton)).perform(scrollTo(), click());
+
+                onView(withId(R.id.ticketNameField)).perform(scrollTo(), click(), typeText("My new issue"));
+                onView(withId(R.id.ticketDescriptionField)).perform(scrollTo(), click(), typeText("This is my new ticket"));
+                Espresso.pressBack(); // Closes the keyboard
+
+                // Required in some devices to effectively click on the button
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                onView(withId(R.id.submitButton)).perform(scrollTo(), click());
+                onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My important issue")))));
+                onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My new issue")))));
+
+                Espresso.pressBackUnconditionally(); // Closes the list of tickets
+                assertScenarioDestroyed(scenario);
+            }
+        });
+    }
+
+    @Test
+    public void createTicketForAProjectThatAlreadyExists() {
+        withMemoryDatabase(db -> {
+            final int projectId = newProject(db, "My project");
+            newTicket(db, "My important issue", "This is an issue that must be solved", projectId);
+
+            final Context targetContext = ApplicationProvider.getApplicationContext();
+            final Intent intent = new Intent(targetContext, MainActivity.class);
+            try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(intent)) {
+                onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My important issue")))));
+
+                openActionBarOverflowOrOptionsMenu(targetContext);
+                onView(withText(R.string.optionNew)).perform(click());
+                onView(withText("My project")).perform(click());
+
+                onView(withId(R.id.ticketNameField)).perform(scrollTo(), click(), typeText("My new issue"));
+                onView(withId(R.id.ticketDescriptionField)).perform(scrollTo(), click(), typeText("This is my new ticket"));
+                Espresso.pressBack(); // Closes the keyboard
+
+                // Required in some devices to effectively click on the button
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                onView(withId(R.id.submitButton)).perform(scrollTo(), click());
+                onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My important issue")))));
+                onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My new issue")))));
+
+                Espresso.pressBackUnconditionally(); // Closes the list of tickets
+                assertScenarioDestroyed(scenario);
             }
         });
     }
@@ -93,9 +199,8 @@ public final class TicketManipulationTest {
     @Test
     public void editTicket() {
         withMemoryDatabase(db -> {
-            final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
-            final ProjectId projectId = manager.newProject("My project");
-            manager.newTicket("My isue", "Ths is my new ticket", projectId);
+            final int projectId = newProject(db, "My project");
+            newTicket(db, "My isue", "Ths is my new ticket", projectId);
 
             final Context targetContext = ApplicationProvider.getApplicationContext();
             final Intent intent = new Intent(targetContext, MainActivity.class);
@@ -105,7 +210,7 @@ public final class TicketManipulationTest {
                 onView(withId(R.id.ticketNameField)).check(matches(withText("My isue")));
                 onView(withId(R.id.ticketDescriptionField)).check(matches(withText("Ths is my new ticket")));
 
-                Espresso.openActionBarOverflowOrOptionsMenu(targetContext);
+                openActionBarOverflowOrOptionsMenu(targetContext);
                 onView(withText(R.string.optionEdit)).perform(click());
 
                 onView(withId(R.id.ticketNameField)).perform(scrollTo(), click(), replaceText("My issue"));
@@ -128,7 +233,7 @@ public final class TicketManipulationTest {
                 onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My issue")))));
 
                 Espresso.pressBackUnconditionally(); // Closes the list of tickets
-                assertScenarionDestroyed(scenario);
+                assertScenarioDestroyed(scenario);
             }
         });
     }
@@ -136,9 +241,8 @@ public final class TicketManipulationTest {
     @Test
     public void deleteTicket() {
         withMemoryDatabase(db -> {
-            final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
-            final ProjectId projectId = manager.newProject("My project");
-            manager.newTicket("My issue", "This is my new ticket", projectId);
+            final int projectId = newProject(db, "My project");
+            newTicket(db, "My issue", "This is my new ticket", projectId);
 
             final Context targetContext = ApplicationProvider.getApplicationContext();
             final Intent intent = new Intent(targetContext, MainActivity.class);
@@ -153,7 +257,7 @@ public final class TicketManipulationTest {
                 onView(withId(R.id.listView)).check(matches(hasChildCount(0)));
 
                 Espresso.pressBackUnconditionally(); // Closes the list of tickets
-                assertScenarionDestroyed(scenario);
+                assertScenarioDestroyed(scenario);
             }
         });
     }
