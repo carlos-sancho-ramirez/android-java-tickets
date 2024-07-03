@@ -17,7 +17,7 @@ import sword.tickets.android.models.Ticket;
 
 import static sword.tickets.android.db.PreconditionUtils.ensureNonNull;
 
-public class TicketsDatabaseChecker<ProjectId, TicketId extends IdWhereInterface> implements TicketsChecker<ProjectId, TicketId> {
+public class TicketsDatabaseChecker<ProjectId extends IdWhereInterface, TicketId extends IdWhereInterface> implements TicketsChecker<ProjectId, TicketId> {
 
     @NonNull
     final Database _db;
@@ -69,6 +69,26 @@ public class TicketsDatabaseChecker<ProjectId, TicketId extends IdWhereInterface
     public final ImmutableMap<TicketId, String> getAllTickets() {
         final TicketsTable table = Tables.tickets;
         final DbQuery query = new DbQuery.Builder(table)
+                .select(table.getIdColumnIndex(), table.getNameColumnIndex());
+        final MutableMap<TicketId, String> map = MutableHashMap.empty();
+        try (DbResult result = _db.select(query)) {
+            while (result.hasNext()) {
+                final List<DbValue> row = result.next();
+                final TicketId id = _ticketIdManager.getKeyFromDbValue(row.get(0));
+                final String name = row.get(1).toText();
+                map.put(id, name);
+            }
+        }
+
+        return map.toImmutable();
+    }
+
+    @NonNull
+    @Override
+    public final ImmutableMap<TicketId, String> getAllTicketsForProject(@NonNull ProjectId projectId) {
+        final TicketsTable table = Tables.tickets;
+        final DbQuery query = new DbQueryBuilder(table)
+                .where(table.getProjectColumnIndex(), projectId)
                 .select(table.getIdColumnIndex(), table.getNameColumnIndex());
         final MutableMap<TicketId, String> map = MutableHashMap.empty();
         try (DbResult result = _db.select(query)) {

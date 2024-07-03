@@ -12,7 +12,7 @@ import sword.tickets.android.models.Ticket;
 
 import static sword.tickets.android.db.PreconditionUtils.ensureValidState;
 
-public class TicketsDatabaseManager<ProjectId extends IdPutInterface, TicketId extends IdInterface> extends TicketsDatabaseChecker<ProjectId, TicketId> implements TicketsManager<ProjectId, TicketId> {
+public class TicketsDatabaseManager<ProjectId extends IdInterface, TicketId extends IdInterface> extends TicketsDatabaseChecker<ProjectId, TicketId> implements TicketsManager<ProjectId, TicketId> {
     public TicketsDatabaseManager(@NonNull Database db, @NonNull IntSetter<ProjectId> projectIdManager, @NonNull IntSetter<TicketId> ticketIdManager) {
         super(db, projectIdManager, ticketIdManager);
     }

@@ -10,6 +10,9 @@ public interface TicketsChecker<ProjectId, TicketId> {
     ImmutableMap<TicketId, String> getAllTickets();
 
     @NonNull
+    ImmutableMap<TicketId, String> getAllTicketsForProject(@NonNull ProjectId projectId);
+
+    @NonNull
     ImmutableMap<ProjectId, String> getAllProjects();
     boolean hasAtLeastOneProject();
     Ticket<ProjectId> getTicket(@NonNull TicketId id);

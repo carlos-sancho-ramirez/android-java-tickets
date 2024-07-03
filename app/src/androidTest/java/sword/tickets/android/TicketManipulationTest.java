@@ -25,6 +25,7 @@ import static androidx.test.espresso.action.ViewActions.longClick;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.hasChildCount;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -138,7 +139,10 @@ public final class TicketManipulationTest {
                 }
 
                 onView(withId(R.id.submitButton)).perform(scrollTo(), click());
-                onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My important issue")))));
+                onView(withId(R.id.projectSpinner)).check(matches(isDisplayed()));
+                onView(withId(R.id.projectSpinner)).check(matches(withChild(withChild(withText("My new project")))));
+
+                onView(withText("My important issue")).check(doesNotExist());
                 onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My new issue")))));
 
                 Espresso.pressBackUnconditionally(); // Closes the list of tickets

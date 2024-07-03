@@ -1,13 +1,16 @@
 package sword.tickets.android.db;
 
+import android.content.SharedPreferences;
+
 import androidx.annotation.NonNull;
 
 import sword.database.DbIdentifiableQueryBuilder;
 import sword.database.DbSettableQueryBuilder;
+import sword.tickets.android.PreferenceIdInterface;
 
 import static sword.tickets.android.PreconditionUtils.ensureValidArguments;
 
-public final class ProjectId implements IdInterface {
+public final class ProjectId implements IdInterface, PreferenceIdInterface {
     final int key;
 
     public ProjectId(int key) {
@@ -47,5 +50,10 @@ public final class ProjectId implements IdInterface {
     @Override
     public void put(int columnIndex, @NonNull DbSettableQueryBuilder builder) {
         builder.put(columnIndex, key);
+    }
+
+    @Override
+    public void put(@NonNull SharedPreferences.Editor editor, String preferenceName) {
+        editor.putInt(preferenceName, key);
     }
 }

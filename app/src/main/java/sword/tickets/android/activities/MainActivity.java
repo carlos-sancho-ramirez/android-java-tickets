@@ -2,26 +2,37 @@ package sword.tickets.android.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import sword.collections.ImmutableHashMap;
 import sword.collections.ImmutableMap;
 import sword.tickets.android.DbManager;
 import sword.tickets.android.Intentions;
 import sword.tickets.android.R;
+import sword.tickets.android.UserPreferences;
 import sword.tickets.android.collections.MutableBitSet;
+import sword.tickets.android.db.ProjectId;
 import sword.tickets.android.db.TicketId;
+import sword.tickets.android.db.TicketIdBundler;
+import sword.tickets.android.db.TicketsDbManagerImpl;
 import sword.tickets.android.layout.MainLayoutForActivity;
 import sword.tickets.android.list.adapters.MainAdapter;
+import sword.tickets.android.list.adapters.ProjectPickerAdapter;
 import sword.tickets.android.list.models.TicketEntry;
+import sword.tickets.android.models.Ticket;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
@@ -34,31 +45,54 @@ public final class MainActivity extends Activity {
         String STATE = "st";
     }
 
+    private MainLayoutForActivity _layout;
+    private ImmutableMap<ProjectId, String> _projects;
+    private ProjectId _selectedProjectId;
     private ImmutableMap<TicketId, String> _tickets;
 
-    private MainLayoutForActivity _layout;
     private MainAdapter _adapter;
     private State _state;
 
-    private boolean _uiJustUpdated;
+    private boolean _activityJustCreated;
     private ActionMode _actionMode;
-
-    private void updateModelAndUi() {
-        _tickets = DbManager.getInstance().getManager().getAllTickets();
-        if (_state.selected.isEmpty()) {
-            _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
-        }
-        else {
-            _adapter.setEntries(_tickets.indexes().map(position -> new TicketEntry(_tickets.valueAt(position), _state.selected.contains(position))));
-        }
-
-        _uiJustUpdated = true;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         _layout = MainLayoutForActivity.attach(this);
+
+        final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
+        _projects = manager.getAllProjects();
+
+        final UserPreferences userPreferences = new UserPreferences(this);
+        _selectedProjectId = userPreferences.getSelectedProject();
+
+        final int projectCount = _projects.size();
+        if (projectCount == 0) {
+            if (_selectedProjectId != null) {
+                userPreferences.setSelectedProject(null);
+                _selectedProjectId = null;
+            }
+
+            _tickets = ImmutableHashMap.empty();
+        }
+        else if (projectCount == 1) {
+            if (!_projects.keyAt(0).equals(_selectedProjectId)) {
+                _selectedProjectId = _projects.keyAt(0);
+                userPreferences.setSelectedProject(_selectedProjectId);
+            }
+
+            _tickets = manager.getAllTickets();
+        }
+        else {
+            if (!_projects.containsKey(_selectedProjectId)) {
+                _selectedProjectId = _projects.keyAt(0);
+                userPreferences.setSelectedProject(_selectedProjectId);
+            }
+
+            _tickets = manager.getAllTicketsForProject(_selectedProjectId);
+        }
+        ensureValidState(_tickets != null);
 
         if (savedInstanceState == null) {
             _state = new State(MutableBitSet.empty());
@@ -106,12 +140,67 @@ public final class MainActivity extends Activity {
             return false;
         });
 
-        updateModelAndUi();
-        if (!_state.selected.isEmpty()) {
+        final Spinner projectSpinner = _layout.projectSpinner();
+        if (projectCount >= 2) {
+            final int selectedPosition = _projects.indexOfKey(_selectedProjectId);
+            projectSpinner.setAdapter(new ProjectPickerAdapter(_projects.toList()));
+            projectSpinner.setSelection(selectedPosition);
+            projectSpinner.setOnItemSelectedListener(new ProjectSelectionChangedListener());
+        }
+        else {
+            projectSpinner.setVisibility(View.GONE);
+        }
+
+        if (_state.selected.isEmpty()) {
+            _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+        }
+        else {
+            _adapter.setEntries(_tickets.indexes().map(position -> new TicketEntry(_tickets.valueAt(position), _state.selected.contains(position))));
+
             startActionMode(new ActionModeCallback());
             if (_state.displayingDeleteConfirmationDialog) {
                 displayDeleteConfirmationDialog();
             }
+        }
+
+        _activityJustCreated = true;
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_NEW_TICKET && resultCode == Activity.RESULT_OK && !_activityJustCreated) {
+            final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
+            final TicketId newTicketId = TicketIdBundler.readAsIntentExtra(data, Intentions.ResultKeys.TICKET_ID);
+            final Ticket<ProjectId> newTicket = manager.getTicket(newTicketId);
+            final boolean selectedProjectChanged = !newTicket.projectId.equals(_selectedProjectId);
+            if (selectedProjectChanged) {
+                _selectedProjectId = newTicket.projectId;
+                new UserPreferences(this).setSelectedProject(_selectedProjectId);
+            }
+
+            final ImmutableMap<ProjectId, String> previousProjects = _projects;
+            _projects = manager.getAllProjects();
+            final int projectCount = _projects.size();
+
+            if (!_projects.equalMap(previousProjects)) {
+                final Spinner projectSpinner = _layout.projectSpinner();
+                if (projectCount >= 2) {
+                    if (previousProjects.size() >= 2) {
+                        projectSpinner.setOnItemSelectedListener(null);
+                    }
+                    else {
+                        projectSpinner.setVisibility(View.VISIBLE);
+                    }
+
+                    final int selectedPosition = _projects.indexOfKey(_selectedProjectId);
+                    projectSpinner.setAdapter(new ProjectPickerAdapter(_projects.toList()));
+                    projectSpinner.setSelection(selectedPosition);
+                    projectSpinner.setOnItemSelectedListener(new ProjectSelectionChangedListener());
+                }
+            }
+
+            _tickets = (projectCount == 1)? manager.getAllTickets() : manager.getAllTicketsForProject(_selectedProjectId);
+            _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
         }
     }
 
@@ -134,8 +223,9 @@ public final class MainActivity extends Activity {
     private void deleteSelectedTickets() {
         boolean somethingDeleted = false;
         boolean errorFound = false;
+        final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
         for (int position : _state.selected) {
-            if (DbManager.getInstance().getManager().deleteTicket(_tickets.keyAt(position))) {
+            if (manager.deleteTicket(_tickets.keyAt(position))) {
                 somethingDeleted = true;
             }
             else {
@@ -152,7 +242,8 @@ public final class MainActivity extends Activity {
 
         _state.selected.clear();
         if (somethingDeleted) {
-            updateModelAndUi();
+            _tickets = manager.getAllTicketsForProject(_selectedProjectId);
+            _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
         }
         else {
             _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
@@ -198,9 +289,7 @@ public final class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (!_uiJustUpdated) {
-            updateModelAndUi();
-        }
+        _activityJustCreated = false;
     }
 
     @Override
@@ -227,10 +316,23 @@ public final class MainActivity extends Activity {
         outState.putParcelable(SavedKeys.STATE, _state);
     }
 
-    @Override
-    protected void onPause() {
-        _uiJustUpdated = false;
-        super.onPause();
+    private final class ProjectSelectionChangedListener implements AdapterView.OnItemSelectedListener {
+
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            final ProjectId newSelection = _projects.keyAt(position);
+            if (!newSelection.equals(_selectedProjectId)) {
+                _selectedProjectId = newSelection;
+                new UserPreferences(MainActivity.this).setSelectedProject(newSelection);
+                _tickets = DbManager.getInstance().getManager().getAllTicketsForProject(newSelection);
+                _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            // Nothing to be done
+        }
     }
 
     private static final class State implements Parcelable {
