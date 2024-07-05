@@ -2,8 +2,14 @@ package sword.tickets.android.db;
 
 import androidx.annotation.NonNull;
 
+import sword.collections.List;
+import sword.collections.MutableIntList;
+import sword.collections.MutableList;
 import sword.database.Database;
 import sword.database.DbInsertQuery;
+import sword.database.DbQuery;
+import sword.database.DbResult;
+import sword.database.DbValue;
 import sword.tickets.android.db.TicketsDbSchema.ProjectsTable;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
 import sword.tickets.android.db.TicketsDbSchema.TicketType;
@@ -32,12 +38,20 @@ public class TicketsDatabaseManager<ProjectId extends IdInterface, TicketId exte
     @Override
     public final TicketId newTicket(String name, String description, @NonNull ProjectId projectId, @NonNull TicketType type) {
         final TicketsTable table = Tables.tickets;
+        int maxPosition = -1;
+        try (DbResult dbResult = _db.select(new DbQueryBuilder(table).select(table.getPositionColumnIndex()))) {
+            while (dbResult.hasNext()) {
+                maxPosition = Math.max(maxPosition, dbResult.next().get(0).toInt());
+            }
+        }
+
         final int newId = _db.insert(new DbInsertQueryBuilder(table)
                 .put(table.getNameColumnIndex(), name)
                 .put(table.getDescriptionColumnIndex(), description)
                 .put(table.getProjectColumnIndex(), projectId)
                 .put(table.getTypeColumnIndex(), type.value)
                 .put(table.getStateColumnIndex(), TicketsDbSchema.TicketState.NOT_STARTED.value)
+                .put(table.getPositionColumnIndex(), maxPosition + 1)
                 .build());
 
         ensureValidState(newId != 0);
@@ -60,5 +74,75 @@ public class TicketsDatabaseManager<ProjectId extends IdInterface, TicketId exte
         return _db.delete(new DbDeleteQueryBuilder(table)
                 .where(table.getIdColumnIndex(), ticketId)
                 .build());
+    }
+
+    public final boolean moveTicket(@NonNull ProjectId projectId, int movingPosition, int gapPosition) {
+        ensureValidState(movingPosition >= 0);
+        ensureValidState(gapPosition >= 0);
+
+        if (movingPosition == gapPosition) {
+            return true;
+        }
+
+        final TicketsTable table = Tables.tickets;
+
+        final DbQuery query = new DbQueryBuilder(table)
+                .where(table.getProjectColumnIndex(), projectId)
+                .orderBy(table.getPositionColumnIndex())
+                .select(table.getIdColumnIndex(), table.getPositionColumnIndex());
+
+        final MutableList<TicketId> tickets = MutableList.empty();
+        final MutableIntList positions = MutableIntList.empty();
+        try (DbResult dbResult = _db.select(query)) {
+            while (dbResult.hasNext()) {
+                final List<DbValue> row = dbResult.next();
+                tickets.append(_ticketIdManager.getKeyFromDbValue(row.get(0)));
+                positions.append(row.get(1).toInt());
+            }
+        }
+
+        final int ticketsCount = tickets.size();
+        if (movingPosition >= ticketsCount || gapPosition >= ticketsCount) {
+            return false;
+        }
+
+        if (movingPosition < gapPosition) {
+            final int basePosition = positions.valueAt(movingPosition);
+            for (int i = movingPosition; i < gapPosition; i++) {
+                if (!_db.update(new DbUpdateQueryBuilder(table)
+                        .where(table.getIdColumnIndex(), tickets.valueAt(i + 1))
+                        .put(table.getPositionColumnIndex(), basePosition + i - movingPosition)
+                        .build())) {
+                    throw new AssertionError("Unable to update ticket");
+                }
+            }
+
+            if (!_db.update(new DbUpdateQueryBuilder(table)
+                    .where(table.getIdColumnIndex(), tickets.valueAt(movingPosition))
+                    .put(table.getPositionColumnIndex(), basePosition + gapPosition - movingPosition)
+                    .build())) {
+                throw new AssertionError("Unable to update ticket");
+            }
+        }
+        else {
+            final int basePosition = positions.valueAt(gapPosition);
+            if (!_db.update(new DbUpdateQueryBuilder(table)
+                    .where(table.getIdColumnIndex(), tickets.valueAt(movingPosition))
+                    .put(table.getPositionColumnIndex(), basePosition)
+                    .build())) {
+                throw new AssertionError("Unable to update ticket");
+            }
+
+            for (int i = gapPosition + 1; i <= movingPosition; i++) {
+                if (!_db.update(new DbUpdateQueryBuilder(table)
+                        .where(table.getIdColumnIndex(), tickets.valueAt(i - 1))
+                        .put(table.getPositionColumnIndex(), basePosition + i - gapPosition)
+                        .build())) {
+                    throw new AssertionError("Unable to update ticket");
+                }
+            }
+        }
+
+        return true;
     }
 }

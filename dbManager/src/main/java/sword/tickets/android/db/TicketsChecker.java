@@ -2,15 +2,17 @@ package sword.tickets.android.db;
 
 import androidx.annotation.NonNull;
 
+import sword.collections.ImmutableList;
 import sword.collections.ImmutableMap;
 import sword.tickets.android.models.Ticket;
+import sword.tickets.android.models.TicketReference;
 
 public interface TicketsChecker<ProjectId, TicketId> {
     @NonNull
-    ImmutableMap<TicketId, String> getAllTickets();
+    ImmutableList<TicketReference<TicketId>> getAllTickets();
 
     @NonNull
-    ImmutableMap<TicketId, String> getAllTicketsForProject(@NonNull ProjectId projectId);
+    ImmutableList<TicketReference<TicketId>> getAllTicketsForProject(@NonNull ProjectId projectId);
 
     @NonNull
     ImmutableMap<ProjectId, String> getAllProjects();

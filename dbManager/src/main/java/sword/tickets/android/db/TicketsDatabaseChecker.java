@@ -2,9 +2,11 @@ package sword.tickets.android.db;
 
 import androidx.annotation.NonNull;
 
+import sword.collections.ImmutableList;
 import sword.collections.ImmutableMap;
 import sword.collections.List;
 import sword.collections.MutableHashMap;
+import sword.collections.MutableList;
 import sword.collections.MutableMap;
 import sword.database.Database;
 import sword.database.DbQuery;
@@ -14,6 +16,7 @@ import sword.tickets.android.db.TicketsDbSchema.ProjectsTable;
 import sword.tickets.android.db.TicketsDbSchema.Tables;
 import sword.tickets.android.db.TicketsDbSchema.TicketsTable;
 import sword.tickets.android.models.Ticket;
+import sword.tickets.android.models.TicketReference;
 
 import static sword.tickets.android.db.PreconditionUtils.ensureNonNull;
 
@@ -66,41 +69,43 @@ public class TicketsDatabaseChecker<ProjectId extends IdWhereInterface, TicketId
 
     @NonNull
     @Override
-    public final ImmutableMap<TicketId, String> getAllTickets() {
+    public final ImmutableList<TicketReference<TicketId>> getAllTickets() {
         final TicketsTable table = Tables.tickets;
         final DbQuery query = new DbQuery.Builder(table)
+                .orderBy(table.getPositionColumnIndex())
                 .select(table.getIdColumnIndex(), table.getNameColumnIndex());
-        final MutableMap<TicketId, String> map = MutableHashMap.empty();
+        final MutableList<TicketReference<TicketId>> list = MutableList.empty();
         try (DbResult result = _db.select(query)) {
             while (result.hasNext()) {
                 final List<DbValue> row = result.next();
                 final TicketId id = _ticketIdManager.getKeyFromDbValue(row.get(0));
                 final String name = row.get(1).toText();
-                map.put(id, name);
+                list.append(new TicketReference<>(id, name));
             }
         }
 
-        return map.toImmutable();
+        return list.toImmutable();
     }
 
     @NonNull
     @Override
-    public final ImmutableMap<TicketId, String> getAllTicketsForProject(@NonNull ProjectId projectId) {
+    public final ImmutableList<TicketReference<TicketId>> getAllTicketsForProject(@NonNull ProjectId projectId) {
         final TicketsTable table = Tables.tickets;
         final DbQuery query = new DbQueryBuilder(table)
                 .where(table.getProjectColumnIndex(), projectId)
+                .orderBy(table.getPositionColumnIndex())
                 .select(table.getIdColumnIndex(), table.getNameColumnIndex());
-        final MutableMap<TicketId, String> map = MutableHashMap.empty();
+        final MutableList<TicketReference<TicketId>> list = MutableList.empty();
         try (DbResult result = _db.select(query)) {
             while (result.hasNext()) {
                 final List<DbValue> row = result.next();
                 final TicketId id = _ticketIdManager.getKeyFromDbValue(row.get(0));
                 final String name = row.get(1).toText();
-                map.put(id, name);
+                list.append(new TicketReference<>(id, name));
             }
         }
 
-        return map.toImmutable();
+        return list.toImmutable();
     }
 
     @Override

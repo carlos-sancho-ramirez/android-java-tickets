@@ -58,7 +58,7 @@ public final class TicketsDbSchema implements DbSchema {
 
     public static final class TicketsTable extends DbTable {
         private TicketsTable() {
-            super("Tickets", new DbIntColumn("project"), new DbTextColumn("name"), new DbTextColumn("description"), new DbIntColumn("type"), new DbIntColumn("state"));
+            super("Tickets", new DbIntColumn("project"), new DbTextColumn("name"), new DbTextColumn("description"), new DbIntColumn("type"), new DbIntColumn("state"), new DbIntColumn("position"));
         }
 
         public int getProjectColumnIndex() {
@@ -79,6 +79,10 @@ public final class TicketsDbSchema implements DbSchema {
 
         public int getStateColumnIndex() {
             return 5;
+        }
+
+        public int getPositionColumnIndex() {
+            return 6;
         }
     }
 
