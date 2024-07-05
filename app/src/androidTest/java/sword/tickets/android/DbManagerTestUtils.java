@@ -1,5 +1,6 @@
 package sword.tickets.android;
 
+import sword.collections.Function;
 import sword.collections.Procedure;
 import sword.database.Database;
 import sword.database.MemoryDatabase;
@@ -9,16 +10,20 @@ import androidx.annotation.NonNull;
 public final class DbManagerTestUtils {
 
     public static void withMemoryDatabase(@NonNull Procedure<Database> procedure) {
-        final DbManager dbManager = DbManager.getInstance();
-        final Database originalDatabase = dbManager._database;
+        final Function<DbManager, Database> originalDatabaseCreator = DbManager.databaseCreator;
         final MemoryDatabase database = new MemoryDatabase();
-        dbManager._database = database;
+        DbManager.databaseCreator = manager -> database;
+
+        final DbManager dbManager = DbManager.getInstance();
+        dbManager._database = null;
         dbManager._ticketsManager = null;
         try {
             procedure.apply(database);
         }
         finally {
-            dbManager._database = originalDatabase;
+            DbManager.databaseCreator = originalDatabaseCreator;
+            dbManager._database = null;
+            dbManager._ticketsManager = null;
         }
     }
 

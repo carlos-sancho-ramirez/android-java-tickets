@@ -20,6 +20,7 @@ import sword.database.DbColumn;
 import sword.database.DbDeleteQuery;
 import sword.database.DbIndex;
 import sword.database.DbInsertQuery;
+import sword.database.DbMultiInsertQuery;
 import sword.database.DbQuery;
 import sword.database.DbResult;
 import sword.database.DbTable;
@@ -52,7 +53,10 @@ public final class DbManager extends SQLiteOpenHelper {
     }
 
     @TestSwitcher
-    Database _database;
+    public static Function<DbManager, Database> databaseCreator = manager -> manager.new PrivateManagerDatabase();
+
+    @TestSwitcher
+    VersionTrackerDatabase _database;
 
     @TestSwitcher
     TicketsDbManagerImpl _ticketsManager;
@@ -62,9 +66,9 @@ public final class DbManager extends SQLiteOpenHelper {
     }
 
     @NonNull
-    public Database getDatabase() {
+    public VersionTrackerDatabase getDatabase() {
         if (_database == null) {
-            _database = new ManagerDatabase();
+            _database = new VersionTrackerDatabase(databaseCreator.apply(this));
         }
 
         return _database;
@@ -250,13 +254,10 @@ public final class DbManager extends SQLiteOpenHelper {
         }
     }
 
-    final class ManagerDatabase implements Database {
-
-        int _dbWriteVersion = 1;
+    private final class PrivateManagerDatabase implements Database {
 
         @Override
         public boolean update(DbUpdateQuery query) {
-            ++_dbWriteVersion;
             final ImmutableIntKeyMap<DbValue> constraints = query.constraints();
             final ImmutableList<DbColumn> columns = query.table().columns();
             final String whereClause = constraints.keySet()
@@ -291,7 +292,6 @@ public final class DbManager extends SQLiteOpenHelper {
 
         @Override
         public Integer insert(DbInsertQuery query) {
-            ++_dbWriteVersion;
             final int count = query.getColumnCount();
             final ContentValues cv = new ContentValues();
             for (int i = 0; i < count; i++) {
@@ -312,7 +312,6 @@ public final class DbManager extends SQLiteOpenHelper {
 
         @Override
         public boolean delete(DbDeleteQuery query) {
-            ++_dbWriteVersion;
             final ImmutableIntKeyMap<DbValue> constraints = query.constraints();
             final ImmutableList<DbColumn> columns = query.table().columns();
             final String whereClause = constraints.keySet()
@@ -327,6 +326,52 @@ public final class DbManager extends SQLiteOpenHelper {
             }
 
             return getWritableDatabase().delete(query.table().name(), whereClause, values) > 0;
+        }
+    }
+
+    public final class VersionTrackerDatabase implements Database {
+
+        @NonNull
+        private final Database _db;
+
+        private int _dbDataVersion;
+
+        private VersionTrackerDatabase(@NonNull Database db) {
+            ensureNonNull(db);
+            _db = db;
+        }
+
+        @Override
+        public boolean update(DbUpdateQuery query) {
+            ++_dbDataVersion;
+            return _db.update(query);
+        }
+
+        @Override
+        public DbResult select(DbQuery query) {
+            return _db.select(query);
+        }
+
+        @Override
+        public Integer insert(DbInsertQuery query) {
+            ++_dbDataVersion;
+            return _db.insert(query);
+        }
+
+        @Override
+        public boolean delete(DbDeleteQuery query) {
+            ++_dbDataVersion;
+            return _db.delete(query);
+        }
+
+        @Override
+        public void insert(DbMultiInsertQuery query) {
+            ++_dbDataVersion;
+            _db.insert(query);
+        }
+
+        public int getDataVersion() {
+            return _dbDataVersion;
         }
     }
 }

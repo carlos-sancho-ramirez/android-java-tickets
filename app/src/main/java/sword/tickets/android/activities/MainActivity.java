@@ -53,7 +53,8 @@ public final class MainActivity extends Activity {
     private MainAdapter _adapter;
     private State _state;
 
-    private boolean _activityJustCreated;
+    private boolean _dataInSync;
+    private int _lastDataVersion;
     private ActionMode _actionMode;
 
     @Override
@@ -163,12 +164,13 @@ public final class MainActivity extends Activity {
             }
         }
 
-        _activityJustCreated = true;
+        _lastDataVersion = DbManager.getInstance().getDatabase().getDataVersion();
+        _dataInSync = true;
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_NEW_TICKET && resultCode == Activity.RESULT_OK && !_activityJustCreated) {
+        if (requestCode == REQUEST_CODE_NEW_TICKET && resultCode == Activity.RESULT_OK && !_dataInSync) {
             final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
             final TicketId newTicketId = TicketIdBundler.readAsIntentExtra(data, Intentions.ResultKeys.TICKET_ID);
             final Ticket<ProjectId> newTicket = manager.getTicket(newTicketId);
@@ -201,6 +203,8 @@ public final class MainActivity extends Activity {
 
             _tickets = (projectCount == 1)? manager.getAllTickets() : manager.getAllTicketsForProject(_selectedProjectId);
             _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+            _lastDataVersion = DbManager.getInstance().getDatabase().getDataVersion();
+            _dataInSync = true;
         }
     }
 
@@ -250,6 +254,7 @@ public final class MainActivity extends Activity {
         }
 
         _actionMode.finish();
+        _lastDataVersion = DbManager.getInstance().getDatabase().getDataVersion();
     }
 
     private final class ActionModeCallback implements ActionMode.Callback {
@@ -289,7 +294,22 @@ public final class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        _activityJustCreated = false;
+        final DbManager dbManager = DbManager.getInstance();
+        if (!_dataInSync && dbManager.getDatabase().getDataVersion() != _lastDataVersion) {
+            final int projectCount = _projects.size();
+            if (projectCount == 0) {
+                _tickets = ImmutableHashMap.empty();
+            }
+            else if (projectCount == 1) {
+                _tickets = dbManager.getManager().getAllTickets();
+            }
+            else {
+                _tickets = dbManager.getManager().getAllTicketsForProject(_selectedProjectId);
+            }
+            _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+            _lastDataVersion = dbManager.getDatabase().getDataVersion();
+            _dataInSync = true;
+        }
     }
 
     @Override
@@ -308,6 +328,12 @@ public final class MainActivity extends Activity {
         else {
             return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        _dataInSync = false;
+        super.onPause();
     }
 
     @Override
