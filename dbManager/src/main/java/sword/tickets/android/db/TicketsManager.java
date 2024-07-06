@@ -13,4 +13,5 @@ public interface TicketsManager<ProjectId, TicketId> extends TicketsChecker<Proj
     TicketId newTicket(String name, String description, @NonNull ProjectId projectId, @NonNull TicketType type);
     boolean updateTicket(@NonNull TicketId ticketId, @NonNull Ticket<ProjectId> ticket);
     boolean deleteTicket(@NonNull TicketId ticketId);
+    boolean moveTicket(@NonNull ProjectId projectId, int movingPosition, int gapPosition);
 }

@@ -11,13 +11,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import sword.collections.ImmutableHashMap;
+import sword.collections.ImmutableList;
 import sword.collections.ImmutableMap;
 import sword.tickets.android.DbManager;
 import sword.tickets.android.Intentions;
@@ -33,6 +34,8 @@ import sword.tickets.android.list.adapters.MainAdapter;
 import sword.tickets.android.list.adapters.ProjectPickerAdapter;
 import sword.tickets.android.list.models.TicketEntry;
 import sword.tickets.android.models.Ticket;
+import sword.tickets.android.models.TicketReference;
+import sword.tickets.android.view.ListViewFrameView;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
@@ -48,7 +51,7 @@ public final class MainActivity extends Activity {
     private MainLayoutForActivity _layout;
     private ImmutableMap<ProjectId, String> _projects;
     private ProjectId _selectedProjectId;
-    private ImmutableMap<TicketId, String> _tickets;
+    private ImmutableList<TicketReference<TicketId>> _tickets;
 
     private MainAdapter _adapter;
     private State _state;
@@ -75,7 +78,7 @@ public final class MainActivity extends Activity {
                 _selectedProjectId = null;
             }
 
-            _tickets = ImmutableHashMap.empty();
+            _tickets = ImmutableList.empty();
         }
         else if (projectCount == 1) {
             if (!_projects.keyAt(0).equals(_selectedProjectId)) {
@@ -106,40 +109,8 @@ public final class MainActivity extends Activity {
         _adapter = new MainAdapter();
         final ListView listView = _layout.listView();
         listView.setAdapter(_adapter);
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-            if (_state.selected.isEmpty()) {
-                TicketActivity.open(this, _tickets.keyAt(position));
-            }
-            else {
-                _state.selected.flip(position);
-                if (_state.selected.isEmpty()) {
-                    if (_actionMode != null) {
-                        _actionMode.finish();
-                    }
 
-                    _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
-                }
-                else {
-                    if (_actionMode != null) {
-                        _actionMode.setTitle("" + _state.selected.size());
-                    }
-
-                    _adapter.setEntries(_tickets.indexes().map(p -> new TicketEntry(_tickets.valueAt(p), _state.selected.contains(p))));
-                }
-            }
-        });
-
-        listView.setOnItemLongClickListener((parent, view, position, id) -> {
-            if (_state.selected.isEmpty()) {
-                _state.selected.add(position);
-                _adapter.setEntries(_tickets.indexes().map(p -> new TicketEntry(_tickets.valueAt(p), p == position)));
-                startActionMode(new ActionModeCallback());
-
-                return true;
-            }
-
-            return false;
-        });
+        _layout.listViewFrame().setLongClickListener(new LongTouchListener());
 
         final Spinner projectSpinner = _layout.projectSpinner();
         if (projectCount >= 2) {
@@ -153,10 +124,10 @@ public final class MainActivity extends Activity {
         }
 
         if (_state.selected.isEmpty()) {
-            _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+            _adapter.setEntries(_tickets.map(ticket -> new TicketEntry(ticket.name, false)));
         }
         else {
-            _adapter.setEntries(_tickets.indexes().map(position -> new TicketEntry(_tickets.valueAt(position), _state.selected.contains(position))));
+            _adapter.setEntries(_tickets.indexes().map(position -> new TicketEntry(_tickets.valueAt(position).name, _state.selected.contains(position))));
 
             startActionMode(new ActionModeCallback());
             if (_state.displayingDeleteConfirmationDialog) {
@@ -202,7 +173,7 @@ public final class MainActivity extends Activity {
             }
 
             _tickets = (projectCount == 1)? manager.getAllTickets() : manager.getAllTicketsForProject(_selectedProjectId);
-            _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+            _adapter.setEntries(_tickets.map(ticket -> new TicketEntry(ticket.name, false)));
             _lastDataVersion = DbManager.getInstance().getDatabase().getDataVersion();
             _dataInSync = true;
         }
@@ -229,7 +200,7 @@ public final class MainActivity extends Activity {
         boolean errorFound = false;
         final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
         for (int position : _state.selected) {
-            if (manager.deleteTicket(_tickets.keyAt(position))) {
+            if (manager.deleteTicket(_tickets.valueAt(position).id)) {
                 somethingDeleted = true;
             }
             else {
@@ -245,12 +216,13 @@ public final class MainActivity extends Activity {
         }
 
         _state.selected.clear();
+        _layout.listViewFrame().stopMultiSelection();
         if (somethingDeleted) {
             _tickets = manager.getAllTicketsForProject(_selectedProjectId);
-            _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+            _adapter.setEntries(_tickets.map(tickets -> new TicketEntry(tickets.name, false)));
         }
         else {
-            _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+            _adapter.setEntries(_tickets.map(tickets -> new TicketEntry(tickets.name, false)));
         }
 
         _actionMode.finish();
@@ -284,9 +256,10 @@ public final class MainActivity extends Activity {
         @Override
         public void onDestroyActionMode(ActionMode mode) {
             if (_state.selected.clear()) {
-                _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+                _adapter.setEntries(_tickets.map(tickets -> new TicketEntry(tickets.name, false)));
             }
 
+            _layout.listViewFrame().stopMultiSelection();
             _actionMode = null;
         }
     }
@@ -298,7 +271,7 @@ public final class MainActivity extends Activity {
         if (!_dataInSync && dbManager.getDatabase().getDataVersion() != _lastDataVersion) {
             final int projectCount = _projects.size();
             if (projectCount == 0) {
-                _tickets = ImmutableHashMap.empty();
+                _tickets = ImmutableList.empty();
             }
             else if (projectCount == 1) {
                 _tickets = dbManager.getManager().getAllTickets();
@@ -306,7 +279,7 @@ public final class MainActivity extends Activity {
             else {
                 _tickets = dbManager.getManager().getAllTicketsForProject(_selectedProjectId);
             }
-            _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+            _adapter.setEntries(_tickets.map(tickets -> new TicketEntry(tickets.name, false)));
             _lastDataVersion = dbManager.getDatabase().getDataVersion();
             _dataInSync = true;
         }
@@ -351,13 +324,166 @@ public final class MainActivity extends Activity {
                 _selectedProjectId = newSelection;
                 new UserPreferences(MainActivity.this).setSelectedProject(newSelection);
                 _tickets = DbManager.getInstance().getManager().getAllTicketsForProject(newSelection);
-                _adapter.setEntries(_tickets.toList().map(name -> new TicketEntry(name, false)));
+                _adapter.setEntries(_tickets.map(tickets -> new TicketEntry(tickets.name, false)));
             }
         }
 
         @Override
         public void onNothingSelected(AdapterView<?> parent) {
             // Nothing to be done
+        }
+    }
+
+    private final class LongTouchListener implements ListViewFrameView.LongClickListener {
+
+        private int _originalTopPosition;
+        private int _originalHeight;
+        private View _floatingView;
+
+        private int _movingPosition;
+        private int _gapPosition;
+
+        @Override
+        public void onItemClick(int adapterPosition) {
+            if (_state.selected.isEmpty()) {
+                TicketActivity.open(MainActivity.this, _tickets.valueAt(adapterPosition).id);
+            }
+            else {
+                _state.selected.flip(adapterPosition);
+                if (_state.selected.isEmpty()) {
+                    if (_actionMode != null) {
+                        _actionMode.finish();
+                    }
+                    _layout.listViewFrame().stopMultiSelection();
+
+                    _adapter.setEntries(_tickets.map(tickets -> new TicketEntry(tickets.name, false)));
+                }
+                else {
+                    if (_actionMode != null) {
+                        _actionMode.setTitle("" + _state.selected.size());
+                    }
+
+                    _adapter.setEntries(_tickets.indexes().map(p -> new TicketEntry(_tickets.valueAt(p).name, _state.selected.contains(p))));
+                }
+            }
+        }
+
+        @Override
+        public void onLongClickStart(int adapterPosition) {
+            ensureValidState(_floatingView == null);
+            final int firstVisiblePosition = _layout.listView().getFirstVisiblePosition();
+            final View childView = _layout.listView().getChildAt(adapterPosition - firstVisiblePosition);
+            _originalTopPosition = childView.getTop();
+            _originalHeight = childView.getHeight();
+
+            _floatingView = _adapter.getView(adapterPosition, null, _layout.listViewFrame());
+            _floatingView.findViewById(R.id.textView).setBackgroundColor(0xFF99FFDD);
+            final FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) _floatingView.getLayoutParams();
+            lp.topMargin = _originalTopPosition;
+            _floatingView.setLayoutParams(lp);
+            _layout.listViewFrame().addView(_floatingView);
+        }
+
+        @Override
+        public void onMultiSelectionStart(int adapterPosition) {
+            ensureValidState(_floatingView != null);
+            _layout.listViewFrame().removeView(_floatingView);
+            _floatingView = null;
+
+            _state.selected.add(adapterPosition);
+            _adapter.setEntries(_tickets.indexes().map(p -> new TicketEntry(_tickets.valueAt(p).name, p == adapterPosition)));
+            startActionMode(new ActionModeCallback());
+        }
+
+        private void updateAdapter() {
+            _adapter.setEntries(_tickets.indexes().map(position -> {
+                if (_movingPosition == _gapPosition) {
+                    if (position == _gapPosition) {
+                        return new TicketEntry("", false);
+                    }
+                    else {
+                        return new TicketEntry(_tickets.valueAt(position).name, false);
+                    }
+                }
+                else if (_movingPosition < _gapPosition) {
+                    if (position < _movingPosition) {
+                        return new TicketEntry(_tickets.valueAt(position).name, false);
+                    }
+                    else if (position < _gapPosition) {
+                        return new TicketEntry(_tickets.valueAt(position + 1).name, false);
+                    }
+                    else if (position == _gapPosition) {
+                        return new TicketEntry("", false);
+                    }
+                    else {
+                        return new TicketEntry(_tickets.valueAt(position).name, false);
+                    }
+                }
+                else { // _gapPosition < _movingPosition
+                    if (position < _gapPosition) {
+                        return new TicketEntry(_tickets.valueAt(position).name, false);
+                    }
+                    else if (position == _gapPosition) {
+                        return new TicketEntry("", false);
+                    }
+                    else if (position <= _movingPosition) {
+                        return new TicketEntry(_tickets.valueAt(position - 1).name, false);
+                    }
+                    else {
+                        return new TicketEntry(_tickets.valueAt(position).name, false);
+                    }
+                }
+            }));
+        }
+
+        @Override
+        public void onSortingStart(int adapterPosition) {
+            _movingPosition = adapterPosition;
+            _gapPosition = adapterPosition;
+            updateAdapter();
+        }
+
+        @Override
+        public void onSortingMove(int diffY) {
+            final FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) _floatingView.getLayoutParams();
+            lp.topMargin = _originalTopPosition + diffY;
+            _floatingView.setLayoutParams(lp);
+
+            final int newGapPosition;
+            if (diffY >= 0) {
+                newGapPosition = _movingPosition + (diffY + _originalHeight / 2) / _originalHeight;
+            }
+            else {
+                newGapPosition = _movingPosition + (diffY - _originalHeight / 2) / _originalHeight;
+            }
+
+            if (newGapPosition != _gapPosition && newGapPosition >= 0 && newGapPosition < _tickets.size()) {
+                _gapPosition = newGapPosition;
+                updateAdapter();
+            }
+        }
+
+        @Override
+        public void onSortingFinished(int diffY) {
+            ensureValidState(_floatingView != null);
+            _layout.listViewFrame().removeView(_floatingView);
+            _floatingView = null;
+
+            final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
+            if (!manager.moveTicket(_selectedProjectId, _movingPosition, _gapPosition)) {
+                throw new AssertionError();
+            }
+
+            // TODO: Avoid calling the database
+            final int projectCount = _projects.size();
+            if (projectCount == 1) {
+                _tickets = manager.getAllTickets();
+            }
+            else {
+                _tickets = manager.getAllTicketsForProject(_selectedProjectId);
+            }
+
+            _adapter.setEntries(_tickets.indexes().map(p -> new TicketEntry(_tickets.valueAt(p).name, _state.selected.contains(p))));
         }
     }
 

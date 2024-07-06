@@ -36,6 +36,18 @@ final class DbQueryBuilder {
     }
 
     @NonNull
+    public DbQueryBuilder orderBy(int... columnIndexes) {
+        _builder.orderBy(columnIndexes);
+        return this;
+    }
+
+    @NonNull
+    DbQueryBuilder orderBy(DbQuery.Ordered... ordering) {
+        _builder.orderBy(ordering);
+        return this;
+    }
+
+    @NonNull
     DbQuery select(int... selection) {
         return _builder.select(selection);
     }
