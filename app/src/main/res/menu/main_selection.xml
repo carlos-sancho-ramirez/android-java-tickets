@@ -2,5 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/optionDelete"
-        android:title="@string/optionDelete"/>
+        android:title="@string/optionDelete"
+        android:icon="@drawable/ic_delete_24dp"
+        android:showAsAction="ifRoom"/>
 </menu>
