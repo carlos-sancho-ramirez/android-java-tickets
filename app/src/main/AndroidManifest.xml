@@ -29,7 +29,10 @@
             android:name=".activities.NewTicketActivity"
             android:label="@string/newTicketActivityTitle"/>
 
-        <activity android:name=".activities.ProjectPickerActivity"/>
+        <activity
+            android:name=".activities.ProjectPickerActivity"
+            android:label="@string/projectPickerActivityTitle"/>
+
         <activity android:name=".activities.TicketActivity"/>
     </application>
 </manifest>
