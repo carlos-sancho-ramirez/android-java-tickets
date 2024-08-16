@@ -16,8 +16,6 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-
 import sword.collections.ImmutableList;
 import sword.collections.ImmutableMap;
 import sword.tickets.android.DbManager;
@@ -30,12 +28,16 @@ import sword.tickets.android.db.TicketId;
 import sword.tickets.android.db.TicketIdBundler;
 import sword.tickets.android.db.TicketsDbManagerImpl;
 import sword.tickets.android.layout.MainLayoutForActivity;
+import sword.tickets.android.layout.ReleasesTabLayout;
+import sword.tickets.android.layout.TicketsTabLayout;
 import sword.tickets.android.list.adapters.MainAdapter;
 import sword.tickets.android.list.adapters.ProjectPickerAdapter;
 import sword.tickets.android.list.models.TicketEntry;
 import sword.tickets.android.models.Ticket;
 import sword.tickets.android.models.TicketReference;
 import sword.tickets.android.view.ListViewFrameView;
+
+import androidx.annotation.NonNull;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
@@ -53,6 +55,9 @@ public final class MainActivity extends Activity {
     private ProjectId _selectedProjectId;
     private ImmutableList<TicketReference<TicketId>> _tickets;
 
+    private TicketsTabLayout _ticketsTabLayout;
+    private ReleasesTabLayout _releasesTabLayout;
+
     private MainAdapter _adapter;
     private State _state;
 
@@ -64,6 +69,14 @@ public final class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         _layout = MainLayoutForActivity.attach(this);
+
+        if (savedInstanceState == null) {
+            _state = new State(MutableBitSet.empty());
+        }
+        else {
+            _state = savedInstanceState.getParcelable(SavedKeys.STATE, State.class);
+        }
+        ensureValidState(_state != null);
 
         final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
         _projects = manager.getAllProjects();
@@ -77,40 +90,75 @@ public final class MainActivity extends Activity {
                 userPreferences.setSelectedProject(null);
                 _selectedProjectId = null;
             }
-
-            _tickets = ImmutableList.empty();
         }
-        else if (projectCount == 1) {
-            if (!_projects.keyAt(0).equals(_selectedProjectId)) {
+        else {
+            _layout.tabBar().setVisibility(View.VISIBLE);
+            _layout.ticketsTab().setOnClickListener(v -> {
+                _layout.releasesTab().setSelected(false);
+                _layout.ticketsTab().setSelected(true);
+
+                if (_state.releasesTabSelected) {
+                    _state.releasesTabSelected = false;
+                    if (_tickets == null) {
+                        if (_projects.isEmpty()) {
+                            _tickets = ImmutableList.empty();
+                        }
+                        else if (_projects.size() == 1) {
+                            _tickets = manager.getAllTickets();
+                        }
+                        else {
+                            _tickets = manager.getAllTicketsForProject(_selectedProjectId);
+                        }
+                    }
+                    ensureValidState(_tickets != null);
+
+                    _layout.tabContent().removeAllViews();
+                    if (_ticketsTabLayout == null) {
+                        _ticketsTabLayout = TicketsTabLayout.attach(_layout.tabContent());
+
+                        _adapter = new MainAdapter();
+                        final ListView listView = _ticketsTabLayout.listView();
+                        listView.setAdapter(_adapter);
+
+                        _ticketsTabLayout.listViewFrame().setLongClickListener(new LongTouchListener());
+
+                        ensureValidState(_state.selected.isEmpty());
+                        _adapter.setEntries(_tickets.map(ticket -> new TicketEntry(ticket.name, false)));
+                    }
+                    else {
+                        _layout.tabContent().addView(_ticketsTabLayout.view());
+                    }
+                }
+            });
+
+            _layout.releasesTab().setOnClickListener(v -> {
+                _layout.ticketsTab().setSelected(false);
+                _layout.releasesTab().setSelected(true);
+
+                if (!_state.releasesTabSelected) {
+                    _state.releasesTabSelected = true;
+                    _layout.tabContent().removeAllViews();
+                    if (_releasesTabLayout == null) {
+                        _releasesTabLayout = ReleasesTabLayout.attach(_layout.tabContent());
+                        _releasesTabLayout.noReleasesPlaceholder().setVisibility(View.VISIBLE);
+                    }
+                    else {
+                        _layout.tabContent().addView(_releasesTabLayout.view());
+                    }
+                }
+            });
+
+            if (projectCount == 1) {
+                if (!_projects.keyAt(0).equals(_selectedProjectId)) {
+                    _selectedProjectId = _projects.keyAt(0);
+                    userPreferences.setSelectedProject(_selectedProjectId);
+                }
+            }
+            else if (!_projects.containsKey(_selectedProjectId)) {
                 _selectedProjectId = _projects.keyAt(0);
                 userPreferences.setSelectedProject(_selectedProjectId);
             }
-
-            _tickets = manager.getAllTickets();
         }
-        else {
-            if (!_projects.containsKey(_selectedProjectId)) {
-                _selectedProjectId = _projects.keyAt(0);
-                userPreferences.setSelectedProject(_selectedProjectId);
-            }
-
-            _tickets = manager.getAllTicketsForProject(_selectedProjectId);
-        }
-        ensureValidState(_tickets != null);
-
-        if (savedInstanceState == null) {
-            _state = new State(MutableBitSet.empty());
-        }
-        else {
-            _state = savedInstanceState.getParcelable(SavedKeys.STATE, State.class);
-        }
-        ensureValidState(_state != null);
-
-        _adapter = new MainAdapter();
-        final ListView listView = _layout.listView();
-        listView.setAdapter(_adapter);
-
-        _layout.listViewFrame().setLongClickListener(new LongTouchListener());
 
         final Spinner projectSpinner = _layout.projectSpinner();
         if (projectCount >= 2) {
@@ -123,15 +171,41 @@ public final class MainActivity extends Activity {
             projectSpinner.setVisibility(View.GONE);
         }
 
-        if (_state.selected.isEmpty()) {
-            _adapter.setEntries(_tickets.map(ticket -> new TicketEntry(ticket.name, false)));
+        if (_state.releasesTabSelected) {
+            _layout.releasesTab().setSelected(true);
+            _releasesTabLayout = ReleasesTabLayout.attach(_layout.tabContent());
+            _releasesTabLayout.noReleasesPlaceholder().setVisibility(View.VISIBLE);
         }
         else {
-            _adapter.setEntries(_tickets.indexes().map(position -> new TicketEntry(_tickets.valueAt(position).name, _state.selected.contains(position))));
+            _layout.ticketsTab().setSelected(true);
+            _ticketsTabLayout = TicketsTabLayout.attach(_layout.tabContent());
+            if (projectCount == 0) {
+                _tickets = ImmutableList.empty();
+            }
+            else if (projectCount == 1) {
+                _tickets = manager.getAllTickets();
+            }
+            else {
+                _tickets = manager.getAllTicketsForProject(_selectedProjectId);
+            }
+            ensureValidState(_tickets != null);
 
-            startActionMode(new ActionModeCallback());
-            if (_state.displayingDeleteConfirmationDialog) {
-                displayDeleteConfirmationDialog();
+            _adapter = new MainAdapter();
+            final ListView listView = _ticketsTabLayout.listView();
+            listView.setAdapter(_adapter);
+
+            _ticketsTabLayout.listViewFrame().setLongClickListener(new LongTouchListener());
+
+            if (_state.selected.isEmpty()) {
+                _adapter.setEntries(_tickets.map(ticket -> new TicketEntry(ticket.name, false)));
+            }
+            else {
+                _adapter.setEntries(_tickets.indexes().map(position -> new TicketEntry(_tickets.valueAt(position).name, _state.selected.contains(position))));
+
+                startActionMode(new ActionModeCallback());
+                if (_state.displayingDeleteConfirmationDialog) {
+                    displayDeleteConfirmationDialog();
+                }
             }
         }
 
@@ -216,7 +290,7 @@ public final class MainActivity extends Activity {
         }
 
         _state.selected.clear();
-        _layout.listViewFrame().stopMultiSelection();
+        _ticketsTabLayout.listViewFrame().stopMultiSelection();
         if (somethingDeleted) {
             _tickets = manager.getAllTicketsForProject(_selectedProjectId);
             _adapter.setEntries(_tickets.map(tickets -> new TicketEntry(tickets.name, false)));
@@ -259,7 +333,7 @@ public final class MainActivity extends Activity {
                 _adapter.setEntries(_tickets.map(tickets -> new TicketEntry(tickets.name, false)));
             }
 
-            _layout.listViewFrame().stopMultiSelection();
+            _ticketsTabLayout.listViewFrame().stopMultiSelection();
             _actionMode = null;
         }
     }
@@ -354,7 +428,7 @@ public final class MainActivity extends Activity {
                     if (_actionMode != null) {
                         _actionMode.finish();
                     }
-                    _layout.listViewFrame().stopMultiSelection();
+                    _ticketsTabLayout.listViewFrame().stopMultiSelection();
 
                     _adapter.setEntries(_tickets.map(tickets -> new TicketEntry(tickets.name, false)));
                 }
@@ -371,23 +445,23 @@ public final class MainActivity extends Activity {
         @Override
         public void onLongClickStart(int adapterPosition) {
             ensureValidState(_floatingView == null);
-            final int firstVisiblePosition = _layout.listView().getFirstVisiblePosition();
-            final View childView = _layout.listView().getChildAt(adapterPosition - firstVisiblePosition);
+            final int firstVisiblePosition = _ticketsTabLayout.listView().getFirstVisiblePosition();
+            final View childView = _ticketsTabLayout.listView().getChildAt(adapterPosition - firstVisiblePosition);
             _originalTopPosition = childView.getTop();
             _originalHeight = childView.getHeight();
 
-            _floatingView = _adapter.getView(adapterPosition, null, _layout.listViewFrame());
+            _floatingView = _adapter.getView(adapterPosition, null, _ticketsTabLayout.listViewFrame());
             _floatingView.findViewById(R.id.textView).setBackgroundColor(0xFF99FFDD);
             final FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) _floatingView.getLayoutParams();
             lp.topMargin = _originalTopPosition;
             _floatingView.setLayoutParams(lp);
-            _layout.listViewFrame().addView(_floatingView);
+            _ticketsTabLayout.listViewFrame().addView(_floatingView);
         }
 
         @Override
         public void onMultiSelectionStart(int adapterPosition) {
             ensureValidState(_floatingView != null);
-            _layout.listViewFrame().removeView(_floatingView);
+            _ticketsTabLayout.listViewFrame().removeView(_floatingView);
             _floatingView = null;
 
             _state.selected.add(adapterPosition);
@@ -466,7 +540,7 @@ public final class MainActivity extends Activity {
         @Override
         public void onSortingFinished(int diffY) {
             ensureValidState(_floatingView != null);
-            _layout.listViewFrame().removeView(_floatingView);
+            _ticketsTabLayout.listViewFrame().removeView(_floatingView);
             _floatingView = null;
 
             final TicketsDbManagerImpl manager = DbManager.getInstance().getManager();
@@ -488,6 +562,7 @@ public final class MainActivity extends Activity {
     }
 
     private static final class State implements Parcelable {
+        boolean releasesTabSelected;
         @NonNull
         final MutableBitSet selected;
         boolean displayingDeleteConfirmationDialog;
@@ -499,6 +574,8 @@ public final class MainActivity extends Activity {
 
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeBoolean(releasesTabSelected);
+
             if (selected.isEmpty()) {
                 dest.writeInt(0);
             }
@@ -527,8 +604,10 @@ public final class MainActivity extends Activity {
         }
 
         public static final Creator<State> CREATOR = new Creator<State>() {
+            @NonNull
             @Override
-            public State createFromParcel(Parcel in) {
+            public State createFromParcel(@NonNull Parcel in) {
+                final boolean releasesTabSelected = in.readBoolean();
                 final int pageCount = in.readInt();
                 final MutableBitSet selected = MutableBitSet.empty();
                 for (int pageIndex = 0; pageIndex < pageCount; pageIndex++) {
@@ -541,6 +620,7 @@ public final class MainActivity extends Activity {
                 }
 
                 final State state = new State(selected);
+                state.releasesTabSelected = releasesTabSelected;
                 if (pageCount != 0) {
                     state.displayingDeleteConfirmationDialog = in.readBoolean();
                 }
@@ -548,6 +628,7 @@ public final class MainActivity extends Activity {
                 return state;
             }
 
+            @NonNull
             @Override
             public State[] newArray(int size) {
                 return new State[size];

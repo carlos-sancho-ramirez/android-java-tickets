@@ -690,6 +690,9 @@ public abstract class CreateLayoutWrappersTask extends DefaultTask {
     private final HashMap<String, HashSet<String>> mCastable = new HashMap<>();
 
     private static final HashMap<String, String> KNOWN_CASTS = new HashMap<>();
+    static {
+        KNOWN_CASTS.put("sword.tickets.android.view.ListViewFrameView", "android.widget.FrameLayout");
+    }
 
     private boolean canBeCasted(ClassLoader loader, String source, String target) {
         if ("java.lang.Object".equals(target) || source.equals(target)) {

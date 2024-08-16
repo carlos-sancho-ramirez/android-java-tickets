@@ -4,4 +4,5 @@
     <dimen name="ticketPadding">8dp</dimen>
     <dimen name="ticketEntryMarginTop">8dp</dimen>
     <dimen name="ticketFieldMarginStart">4dp</dimen>
+    <dimen name="minTouchable">48dp</dimen>
 </resources>

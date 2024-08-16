@@ -9,14 +9,37 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <sword.tickets.android.view.ListViewFrameView
-        android:id="@+id/listViewFrame"
+    <LinearLayout
+        android:id="@+id/tabBar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:visibility="gone">
 
-        <ListView
-            android:id="@+id/listView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-    </sword.tickets.android.view.ListViewFrameView>
+        <TextView
+            android:id="@+id/ticketsTab"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="@dimen/minTouchable"
+            android:gravity="center"
+            android:background="@drawable/tab_bar_button_background"
+            android:text="@string/ticketsTabText"
+            android:clickable="true"/>
+
+        <TextView
+            android:id="@+id/releasesTab"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="@dimen/minTouchable"
+            android:gravity="center"
+            android:background="@drawable/tab_bar_button_background"
+            android:text="@string/releasesTabText"
+            android:clickable="true"/>
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/tabContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 </LinearLayout>

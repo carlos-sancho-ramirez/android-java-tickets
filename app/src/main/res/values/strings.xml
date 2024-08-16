@@ -27,4 +27,7 @@
     <string name="ticketStateInProgress">In progress</string>
     <string name="ticketStateAbandoned">Abandoned</string>
     <string name="ticketStateCompleted">Completed</string>
+    <string name="noReleasesPlaceholderText">No releases yet</string>
+    <string name="ticketsTabText">Tickets</string>
+    <string name="releasesTabText">Releases</string>
 </resources>
