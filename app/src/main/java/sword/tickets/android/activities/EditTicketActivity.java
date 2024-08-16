@@ -3,18 +3,21 @@ package sword.tickets.android.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Spinner;
 import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import sword.tickets.android.DbManager;
 import sword.tickets.android.R;
 import sword.tickets.android.db.ProjectId;
 import sword.tickets.android.db.TicketId;
 import sword.tickets.android.db.TicketIdBundler;
-import sword.tickets.android.models.Ticket;
+import sword.tickets.android.db.TicketsDbSchema;
 import sword.tickets.android.layout.EditTicketLayoutForActivity;
+import sword.tickets.android.list.adapters.TicketStatePickerAdapter;
+import sword.tickets.android.models.Ticket;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
@@ -49,10 +52,12 @@ public final class EditTicketActivity extends Activity {
         final Ticket<ProjectId> ticket = DbManager.getInstance().getManager().getTicket(ticketId);
         ensureValidState(ticket != null);
 
+        final TicketStatePickerAdapter adapter = new TicketStatePickerAdapter();
         layout.saveButton().setOnClickListener(v -> {
             final String name = layout.ticketNameField().getText().toString();
             final String description = layout.ticketDescriptionField().getText().toString();
-            if (DbManager.getInstance().getManager().updateTicket(ticketId, new Ticket<>(name, description, ticket.projectId))) {
+            final TicketsDbSchema.TicketState state = adapter.getItem(layout.ticketStateSpinner().getSelectedItemPosition());
+            if (DbManager.getInstance().getManager().updateTicket(ticketId, new Ticket<>(name, description, ticket.projectId, state))) {
                 setResult(Activity.RESULT_OK);
                 finish();
             }
@@ -63,5 +68,16 @@ public final class EditTicketActivity extends Activity {
 
         layout.ticketNameField().setText(ticket.name);
         layout.ticketDescriptionField().setText(ticket.description);
+
+        final Spinner spinner = layout.ticketStateSpinner();
+        spinner.setAdapter(adapter);
+
+        final int stateCount = adapter.getCount();
+        for (int i = 0; i < stateCount; i++) {
+            if (adapter.getItem(i) == ticket.state) {
+                spinner.setSelection(i);
+                break;
+            }
+        }
     }
 }

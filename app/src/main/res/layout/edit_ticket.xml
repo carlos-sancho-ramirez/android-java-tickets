@@ -12,6 +12,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:labelFor="@id/ticketNameField"
             android:text="@string/ticketNameLabel"/>
 
         <EditText
@@ -23,6 +24,18 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:labelFor="@id/ticketStateSpinner"
+            android:text="@string/ticketStateLabel"/>
+
+        <Spinner
+            android:id="@+id/ticketStateSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:labelFor="@id/ticketDescriptionField"
             android:text="@string/ticketDescriptionLabel"/>
 
         <EditText

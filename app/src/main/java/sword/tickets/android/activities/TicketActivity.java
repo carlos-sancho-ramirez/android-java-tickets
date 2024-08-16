@@ -13,14 +13,15 @@ import sword.tickets.android.R;
 import sword.tickets.android.db.ProjectId;
 import sword.tickets.android.db.TicketId;
 import sword.tickets.android.db.TicketIdBundler;
-import sword.tickets.android.models.Ticket;
 import sword.tickets.android.layout.TicketLayoutForActivity;
+import sword.tickets.android.models.Ticket;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
+import static sword.tickets.android.list.adapters.TicketStatePickerAdapter.STATE_TEXTS;
 
 public final class TicketActivity extends Activity {
 
@@ -55,6 +56,7 @@ public final class TicketActivity extends Activity {
         }
         else {
             _layout.ticketNameField().setText(ticket.name);
+            _layout.ticketStateField().setText(STATE_TEXTS.get(ticket.state));
             _layout.ticketDescriptionField().setText(ticket.description);
             _layout.infoPanel().setVisibility(View.VISIBLE);
             _uiJustUpdated = true;

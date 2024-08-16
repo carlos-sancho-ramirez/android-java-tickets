@@ -1,7 +1,5 @@
 package sword.tickets.android.db;
 
-import androidx.annotation.NonNull;
-
 import sword.collections.ImmutableList;
 import sword.collections.ImmutableMap;
 import sword.collections.List;
@@ -18,6 +16,8 @@ import sword.tickets.android.db.TicketsDbSchema.Tables;
 import sword.tickets.android.db.TicketsDbSchema.TicketsTable;
 import sword.tickets.android.models.Ticket;
 import sword.tickets.android.models.TicketReference;
+
+import androidx.annotation.NonNull;
 
 import static sword.tickets.android.db.PreconditionUtils.ensureNonNull;
 
@@ -114,7 +114,7 @@ public class TicketsDatabaseChecker<ProjectId extends IdWhereInterface, TicketId
         final TicketsTable table = Tables.tickets;
         final DbQuery query = new DbQueryBuilder(table)
                 .where(table.getIdColumnIndex(), ticketId)
-                .select(table.getNameColumnIndex(), table.getDescriptionColumnIndex(), table.getProjectColumnIndex());
+                .select(table.getNameColumnIndex(), table.getDescriptionColumnIndex(), table.getProjectColumnIndex(), table.getStateColumnIndex());
 
         try (DbResult result = _db.select(query)) {
             if (result.hasNext()) {
@@ -122,7 +122,9 @@ public class TicketsDatabaseChecker<ProjectId extends IdWhereInterface, TicketId
                 final String name = row.get(0).toText();
                 final String description = row.get(1).toText();
                 final ProjectId projectId = _projectIdManager.getKeyFromDbValue(row.get(2));
-                return new Ticket<>(name, description, projectId);
+                final int rawState = row.get(3).toInt();
+                final TicketsDbSchema.TicketState state = ImmutableList.from(TicketsDbSchema.TicketState.values()).findFirst(st -> rawState == st.value, null);
+                return new Ticket<>(name, description, projectId, state);
             }
             else {
                 return null;

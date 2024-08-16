@@ -3,6 +3,7 @@
     <string name="optionNew">New</string>
     <string name="ticketNameLabel">Name</string>
     <string name="ticketDescriptionLabel">Description</string>
+    <string name="ticketStateLabel">State</string>
     <string name="ticketNotFound">Ticket not found</string>
     <string name="optionEdit">Edit</string>
     <string name="buttonSave">Save</string>
@@ -22,4 +23,8 @@
     <string name="ticketTypeIssue">Issue</string>
     <string name="ticketTypeModification">Modification</string>
     <string name="projectPickerActivityTitle">Select a project</string>
+    <string name="ticketStateNotStarted">Not started</string>
+    <string name="ticketStateInProgress">In progress</string>
+    <string name="ticketStateAbandoned">Abandoned</string>
+    <string name="ticketStateCompleted">Completed</string>
 </resources>

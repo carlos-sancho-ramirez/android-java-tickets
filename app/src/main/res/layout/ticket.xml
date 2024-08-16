@@ -24,6 +24,17 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/ticketStateLabel"/>
+
+        <TextView
+            android:id="@+id/ticketStateField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/ticketFieldMarginStart"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/ticketEntryMarginTop"
             android:text="@string/ticketDescriptionLabel"/>
 

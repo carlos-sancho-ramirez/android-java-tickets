@@ -1,7 +1,5 @@
 package sword.tickets.android.db;
 
-import androidx.annotation.NonNull;
-
 import sword.collections.List;
 import sword.collections.MutableIntList;
 import sword.collections.MutableList;
@@ -16,6 +14,8 @@ import sword.tickets.android.db.TicketsDbSchema.Tables;
 import sword.tickets.android.db.TicketsDbSchema.TicketType;
 import sword.tickets.android.db.TicketsDbSchema.TicketsTable;
 import sword.tickets.android.models.Ticket;
+
+import androidx.annotation.NonNull;
 
 import static sword.tickets.android.db.PreconditionUtils.ensureValidState;
 
@@ -67,6 +67,7 @@ public class TicketsDatabaseManager<ProjectId extends IdInterface, TicketId exte
                 .put(table.getNameColumnIndex(), ticket.name)
                 .put(table.getDescriptionColumnIndex(), ticket.description)
                 .put(table.getProjectColumnIndex(), ticket.projectId)
+                .put(table.getStateColumnIndex(), ticket.state.value)
                 .build());
     }
 
