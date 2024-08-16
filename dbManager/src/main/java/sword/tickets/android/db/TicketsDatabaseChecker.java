@@ -2,10 +2,13 @@ package sword.tickets.android.db;
 
 import sword.collections.ImmutableList;
 import sword.collections.ImmutableMap;
+import sword.collections.ImmutableSet;
 import sword.collections.List;
 import sword.collections.MutableHashMap;
+import sword.collections.MutableHashSet;
 import sword.collections.MutableList;
 import sword.collections.MutableMap;
+import sword.collections.MutableSet;
 import sword.database.Database;
 import sword.database.DbQuery;
 import sword.database.DbQuery.Ordered;
@@ -107,6 +110,27 @@ public class TicketsDatabaseChecker<ProjectId extends IdWhereInterface, TicketId
         }
 
         return list.toImmutable();
+    }
+
+    @NonNull
+    @Override
+    public final ImmutableSet<TicketReference<TicketId>> getAllCompletedTicketsForProject(@NonNull ProjectId projectId) {
+        final TicketsTable table = Tables.tickets;
+        final DbQuery query = new DbQueryBuilder(table)
+                .where(table.getProjectColumnIndex(), projectId)
+                .where(table.getStateColumnIndex(), TicketsDbSchema.TicketState.COMPLETED)
+                .select(table.getIdColumnIndex(), table.getNameColumnIndex());
+        final MutableSet<TicketReference<TicketId>> set = MutableHashSet.empty();
+        try (DbResult result = _db.select(query)) {
+            while (result.hasNext()) {
+                final List<DbValue> row = result.next();
+                final TicketId id = _ticketIdManager.getKeyFromDbValue(row.get(0));
+                final String name = row.get(1).toText();
+                set.add(new TicketReference<>(id, name));
+            }
+        }
+
+        return set.toImmutable();
     }
 
     @Override

@@ -44,7 +44,8 @@ import static sword.tickets.android.PreconditionUtils.ensureValidState;
 
 public final class MainActivity extends Activity {
 
-    private static final int REQUEST_CODE_NEW_TICKET = 1;
+    private static final int REQUEST_CODE_NEW_RELEASE = 1;
+    private static final int REQUEST_CODE_NEW_TICKET = 2;
 
     private interface SavedKeys {
         String STATE = "st";
@@ -369,7 +370,12 @@ public final class MainActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.optionNew) {
-            Intentions.createTicket(this, REQUEST_CODE_NEW_TICKET);
+            if (_state.releasesTabSelected) {
+                Intentions.createRelease(this, REQUEST_CODE_NEW_RELEASE);
+            }
+            else {
+                Intentions.createTicket(this, REQUEST_CODE_NEW_TICKET);
+            }
             return true;
         }
         else {

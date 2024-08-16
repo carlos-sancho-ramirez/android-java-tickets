@@ -34,5 +34,9 @@
             android:label="@string/projectPickerActivityTitle"/>
 
         <activity android:name=".activities.TicketActivity"/>
+
+        <activity
+            android:name=".activities.TicketSetPickerActivity"
+            android:label="@string/ticketSetPickerActivityTitle"/>
     </application>
 </manifest>

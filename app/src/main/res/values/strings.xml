@@ -23,6 +23,7 @@
     <string name="ticketTypeIssue">Issue</string>
     <string name="ticketTypeModification">Modification</string>
     <string name="projectPickerActivityTitle">Select a project</string>
+    <string name="ticketSetPickerActivityTitle">Select tickets</string>
     <string name="ticketStateNotStarted">Not started</string>
     <string name="ticketStateInProgress">In progress</string>
     <string name="ticketStateAbandoned">Abandoned</string>

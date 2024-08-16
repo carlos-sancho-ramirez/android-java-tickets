@@ -1,13 +1,13 @@
 package sword.tickets.android.db;
 
-import androidx.annotation.NonNull;
-
 import sword.collections.ImmutableList;
 import sword.database.DbIndex;
 import sword.database.DbIntColumn;
 import sword.database.DbSchema;
 import sword.database.DbTable;
 import sword.database.DbTextColumn;
+
+import androidx.annotation.NonNull;
 
 public final class TicketsDbSchema implements DbSchema {
 
@@ -31,6 +31,36 @@ public final class TicketsDbSchema implements DbSchema {
         }
     }
 
+    public enum ReleaseType {
+        MAJOR(1),
+        MINOR(2),
+        BUG_FIX(3);
+
+        public final int value;
+
+        ReleaseType(int value) {
+            this.value = value;
+        }
+    }
+
+    public static final class ReleasesTable extends DbTable {
+        private ReleasesTable() {
+            super("Releases", new DbIntColumn("majorVersion"), new DbIntColumn("minorVersion"), new DbIntColumn("bugFixVersion"));
+        }
+
+        public int getMajorVersionColumnIndex() {
+            return 1;
+        }
+
+        public int getMinorVersionColumnIndex() {
+            return 2;
+        }
+
+        public int getBugFixVersionColumnIndex() {
+            return 3;
+        }
+    }
+
     public enum TicketType {
         NEW_CAPABILITY(1),
         ISSUE(2),
@@ -43,7 +73,7 @@ public final class TicketsDbSchema implements DbSchema {
         }
     }
 
-    public enum TicketState {
+    public enum TicketState implements IntEnumValue {
         NOT_STARTED(1),
         IN_PROGRESS(2),
         ABANDONED(3),
@@ -53,6 +83,11 @@ public final class TicketsDbSchema implements DbSchema {
 
         TicketState(int value) {
             this.value = value;
+        }
+
+        @Override
+        public int value() {
+            return value;
         }
     }
 
@@ -88,11 +123,13 @@ public final class TicketsDbSchema implements DbSchema {
 
     public interface Tables {
         ProjectsTable projects = new ProjectsTable();
+        ReleasesTable releases = new ReleasesTable();
         TicketsTable tickets = new TicketsTable();
     }
 
     private final ImmutableList<DbTable> _tables = new ImmutableList.Builder<DbTable>()
             .append(Tables.projects)
+            .append(Tables.releases)
             .append(Tables.tickets)
             .build();
 

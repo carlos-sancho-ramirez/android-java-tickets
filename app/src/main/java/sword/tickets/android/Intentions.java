@@ -2,9 +2,11 @@ package sword.tickets.android;
 
 import android.app.Activity;
 
-import androidx.annotation.NonNull;
-
+import sword.tickets.android.controllers.CreateReleaseTicketSetPickerController;
 import sword.tickets.android.controllers.CreateTicketProjectPickerController;
+import sword.tickets.android.db.ProjectId;
+
+import androidx.annotation.NonNull;
 
 public final class Intentions {
 
@@ -24,6 +26,12 @@ public final class Intentions {
      */
     public static void createTicket(@NonNull Activity activity, int requestCode) {
         new CreateTicketProjectPickerController().fire(activity, requestCode);
+    }
+
+    public static void createRelease(@NonNull Activity activity, int requestCode) {
+        // TODO: The project picker must be open first, instead of hardcoding the first project
+        final ProjectId projectId = DbManager.getInstance().getManager().getAllProjects().keyAt(0);
+        new CreateReleaseTicketSetPickerController(projectId).fire(activity, requestCode);
     }
 
     private Intentions() {

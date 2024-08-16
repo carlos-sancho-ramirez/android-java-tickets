@@ -21,6 +21,11 @@ final class DbQueryBuilder {
         _builder = new DbQuery.Builder(table);
     }
 
+    DbQueryBuilder where(int columnIndex, @NonNull IntEnumValue value) {
+        _builder.where(columnIndex, value.value());
+        return this;
+    }
+
     DbQueryBuilder where(int columnIndex, IdWhereInterface id) {
         if (id != null) {
             id.where(columnIndex, _builder);
