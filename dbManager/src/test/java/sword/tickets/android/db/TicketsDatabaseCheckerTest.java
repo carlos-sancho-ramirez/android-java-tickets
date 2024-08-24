@@ -10,7 +10,7 @@ public final class TicketsDatabaseCheckerTest {
     @Test
     void getAllTickets_whenEmpty() {
         final MemoryDatabase db = new MemoryDatabase();
-        final TicketsDatabaseChecker<ProjectId, TicketId> checker = new TicketsDatabaseChecker<>(db, new ProjectIdManager(), new TicketIdManager());
-        assertEmpty(checker.getAllTickets());
+        final TicketsDatabaseChecker<ProjectId, ReleaseId, TicketId> checker = new TicketsDatabaseChecker<>(db, new ProjectIdManager(), new ReleaseIdManager(), new TicketIdManager());
+        assertEmpty(checker.getAllTicketReferences());
     }
 }

@@ -4,8 +4,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.widget.CheckBox;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import sword.collections.ImmutableSet;
+import sword.collections.MutableHashSet;
+import sword.collections.MutableSet;
 import sword.collections.Set;
 import sword.tickets.android.DbManager;
 import sword.tickets.android.db.ProjectId;
@@ -13,9 +19,6 @@ import sword.tickets.android.db.TicketId;
 import sword.tickets.android.layout.TicketSetPickerEntryLayout;
 import sword.tickets.android.layout.TicketSetPickerLayoutForActivity;
 import sword.tickets.android.models.TicketReference;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
@@ -26,6 +29,10 @@ public final class TicketSetPickerActivity extends Activity {
         String CONTROLLER = "controller";
     }
 
+    private interface SavedKeys {
+        String SELECTED_TICKETS = "st";
+    }
+
     public static void open(@NonNull Activity activity, int requestCode, @NonNull Controller controller) {
         ensureNonNull(controller);
         final Intent intent = new Intent(activity, TicketSetPickerActivity.class);
@@ -33,7 +40,7 @@ public final class TicketSetPickerActivity extends Activity {
         activity.startActivityForResult(intent, requestCode);
     }
 
-    private ImmutableSet<TicketReference<TicketId>> _tickets;
+    private MutableSet<TicketId> _selectedTickets;
 
     @NonNull
     private Controller getController() {
@@ -46,16 +53,48 @@ public final class TicketSetPickerActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final TicketSetPickerLayoutForActivity layout = TicketSetPickerLayoutForActivity.attach(this);
-        _tickets = DbManager.getInstance().getManager().getAllCompletedTicketsForProject(getController().getProjectId());
+        final Controller controller = getController();
+        final ImmutableSet<TicketReference<TicketId>> tickets = DbManager.getInstance().getManager().getAllTicketReferencesWithoutReleaseForProject(controller.getProjectId());
 
-        for (TicketReference<TicketId> ticket : _tickets) {
-            TicketSetPickerEntryLayout.attach(layout.ticketsContainer()).view().setText(ticket.name);
+        if (savedInstanceState == null) {
+            _selectedTickets = MutableHashSet.empty();
+        }
+        else {
+            final ParcelableTicketIdSet parcelable = savedInstanceState.getParcelable(SavedKeys.SELECTED_TICKETS, ParcelableTicketIdSet.class);
+            _selectedTickets = (parcelable != null)? parcelable.get().mutate() : MutableHashSet.empty();
+        }
+
+        for (TicketReference<TicketId> ticket : tickets) {
+            final CheckBox checkBoxView = TicketSetPickerEntryLayout.attach(layout.ticketsContainer()).view();
+            checkBoxView.setText(ticket.name);
+            if (_selectedTickets.contains(ticket.id)) {
+                checkBoxView.setChecked(true);
+            }
+
+            checkBoxView.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) {
+                    _selectedTickets.add(ticket.id);
+                }
+                else {
+                    _selectedTickets.remove(ticket.id);
+                }
+            });
+        }
+
+        layout.finishButton().setOnClickListener(v ->
+                controller.pickTicketSet(this, _selectedTickets));
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (!_selectedTickets.isEmpty()) {
+            outState.putParcelable(SavedKeys.SELECTED_TICKETS, new ParcelableTicketIdSet(_selectedTickets.toImmutable()));
         }
     }
 
     public interface Controller extends Parcelable {
         ProjectId getProjectId();
-        void onActivityResult(@NonNull Activity activity, int requestCode, int resultCode, Intent data);
         void pickTicketSet(@NonNull Activity activity, @NonNull Set<TicketId> tickets);
     }
 }

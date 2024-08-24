@@ -15,7 +15,7 @@ import sword.tickets.android.list.models.TicketEntry;
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
 
-public final class MainAdapter extends BaseAdapter {
+public final class MainTicketsAdapter extends BaseAdapter {
     @NonNull
     private ImmutableList<TicketEntry> _entries = ImmutableList.empty();
     private LayoutInflater _inflater;

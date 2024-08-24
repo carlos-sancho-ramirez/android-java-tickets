@@ -33,6 +33,7 @@ public final class ProjectPickerActivity extends Activity {
         activity.startActivityForResult(intent, requestCode);
     }
 
+    private Controller _controller;
     private ImmutableMap<ProjectId, String> _projects;
 
     @NonNull
@@ -47,23 +48,26 @@ public final class ProjectPickerActivity extends Activity {
         super.onCreate(savedInstanceState);
         final ProjectPickerLayoutForActivity layout = ProjectPickerLayoutForActivity.attach(this);
 
+        _controller = getController();
         _projects = DbManager.getInstance().getManager().getAllProjects();
         final ListView listView = layout.listView();
         listView.setAdapter(new ProjectPickerAdapter(_projects.toList()));
         listView.setOnItemClickListener((parent, view, position, id) ->
-                getController().pickProject(this, _projects.keyAt(position)));
+                _controller.pickProject(this, _projects.keyAt(position)));
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        getController().onActivityResult(this, requestCode, resultCode, data);
+        _controller.onActivityResult(this, requestCode, resultCode, data);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.project_picker, menu);
+        if (_controller.shouldAllowNewOption()) {
+            getMenuInflater().inflate(R.menu.project_picker, menu);
+        }
         return true;
     }
 
@@ -79,6 +83,7 @@ public final class ProjectPickerActivity extends Activity {
     }
 
     public interface Controller extends Parcelable {
+        boolean shouldAllowNewOption();
         void onActivityResult(@NonNull Activity activity, int requestCode, int resultCode, Intent data);
         void pickProject(@NonNull Activity activity, @NonNull ProjectId projectId);
         void newProject(@NonNull Activity activity);

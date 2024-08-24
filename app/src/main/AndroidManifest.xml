@@ -36,6 +36,14 @@
         <activity android:name=".activities.TicketActivity"/>
 
         <activity
+            android:name=".activities.ReleaseTypePickerActivity"
+            android:label="@string/releaseTypePickerActivityTitle"/>
+
+        <activity
+            android:name=".activities.ReleaseAnchorPickerActivity"
+            android:label="@string/releaseAnchorPickerActivityTitle"/>
+
+        <activity
             android:name=".activities.TicketSetPickerActivity"
             android:label="@string/ticketSetPickerActivityTitle"/>
     </application>

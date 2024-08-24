@@ -1,9 +1,9 @@
 package sword.tickets.android.db;
 
+import androidx.annotation.NonNull;
+
 import sword.database.DbQuery;
 import sword.database.DbTable;
-
-import androidx.annotation.NonNull;
 
 import static sword.tickets.android.db.PreconditionUtils.ensureNonNull;
 
@@ -19,6 +19,11 @@ final class DbQueryBuilder {
         ensureNonNull(table);
         _table = table;
         _builder = new DbQuery.Builder(table);
+    }
+
+    DbQueryBuilder where(int columnIndex, int value) {
+        _builder.where(columnIndex, value);
+        return this;
     }
 
     DbQueryBuilder where(int columnIndex, @NonNull IntEnumValue value) {

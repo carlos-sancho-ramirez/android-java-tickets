@@ -6,18 +6,19 @@ import android.os.Bundle;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import sword.tickets.android.DbManager;
 import sword.tickets.android.R;
 import sword.tickets.android.db.ProjectId;
+import sword.tickets.android.db.ReleaseId;
 import sword.tickets.android.db.TicketId;
 import sword.tickets.android.db.TicketIdBundler;
 import sword.tickets.android.db.TicketsDbSchema;
 import sword.tickets.android.layout.EditTicketLayoutForActivity;
 import sword.tickets.android.list.adapters.TicketStatePickerAdapter;
 import sword.tickets.android.models.Ticket;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
@@ -49,7 +50,7 @@ public final class EditTicketActivity extends Activity {
         final EditTicketLayoutForActivity layout = EditTicketLayoutForActivity.attach(this);
 
         final TicketId ticketId = getTicketId();
-        final Ticket<ProjectId> ticket = DbManager.getInstance().getManager().getTicket(ticketId);
+        final Ticket<ProjectId, ReleaseId> ticket = DbManager.getInstance().getManager().getTicket(ticketId);
         ensureValidState(ticket != null);
 
         final TicketStatePickerAdapter adapter = new TicketStatePickerAdapter();
@@ -57,7 +58,7 @@ public final class EditTicketActivity extends Activity {
             final String name = layout.ticketNameField().getText().toString();
             final String description = layout.ticketDescriptionField().getText().toString();
             final TicketsDbSchema.TicketState state = adapter.getItem(layout.ticketStateSpinner().getSelectedItemPosition());
-            if (DbManager.getInstance().getManager().updateTicket(ticketId, new Ticket<>(name, description, ticket.projectId, state))) {
+            if (DbManager.getInstance().getManager().updateTicket(ticketId, new Ticket<>(name, description, ticket.projectId, ticket.releaseId, state))) {
                 setResult(Activity.RESULT_OK);
                 finish();
             }

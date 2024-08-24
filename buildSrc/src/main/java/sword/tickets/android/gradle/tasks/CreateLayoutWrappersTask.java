@@ -290,6 +290,7 @@ public abstract class CreateLayoutWrappersTask extends DefaultTask {
         _implicitTagNames.put("ListView", "android.widget.ListView");
         _implicitTagNames.put("ProgressBar", "android.widget.ProgressBar");
         _implicitTagNames.put("RadioButton", "android.widget.RadioButton");
+        _implicitTagNames.put("RadioGroup", "android.widget.RadioGroup");
         _implicitTagNames.put("RelativeLayout", "android.widget.RelativeLayout");
         _implicitTagNames.put("ScrollView", "android.widget.ScrollView");
         _implicitTagNames.put("SeekBar", "android.widget.SeekBar");

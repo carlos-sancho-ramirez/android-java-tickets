@@ -1,13 +1,13 @@
 package sword.tickets.android.db;
 
+import androidx.annotation.NonNull;
+
 import sword.collections.ImmutableList;
 import sword.database.DbIndex;
 import sword.database.DbIntColumn;
 import sword.database.DbSchema;
 import sword.database.DbTable;
 import sword.database.DbTextColumn;
-
-import androidx.annotation.NonNull;
 
 public final class TicketsDbSchema implements DbSchema {
 
@@ -45,19 +45,23 @@ public final class TicketsDbSchema implements DbSchema {
 
     public static final class ReleasesTable extends DbTable {
         private ReleasesTable() {
-            super("Releases", new DbIntColumn("majorVersion"), new DbIntColumn("minorVersion"), new DbIntColumn("bugFixVersion"));
+            super("Releases", new DbIntColumn("project"), new DbIntColumn("majorVersion"), new DbIntColumn("minorVersion"), new DbIntColumn("bugFixVersion"));
         }
 
-        public int getMajorVersionColumnIndex() {
+        public int getProjectColumnIndex() {
             return 1;
         }
 
-        public int getMinorVersionColumnIndex() {
+        public int getMajorVersionColumnIndex() {
             return 2;
         }
 
-        public int getBugFixVersionColumnIndex() {
+        public int getMinorVersionColumnIndex() {
             return 3;
+        }
+
+        public int getBugFixVersionColumnIndex() {
+            return 4;
         }
     }
 
@@ -93,31 +97,35 @@ public final class TicketsDbSchema implements DbSchema {
 
     public static final class TicketsTable extends DbTable {
         private TicketsTable() {
-            super("Tickets", new DbIntColumn("project"), new DbTextColumn("name"), new DbTextColumn("description"), new DbIntColumn("type"), new DbIntColumn("state"), new DbIntColumn("priority"));
+            super("Tickets", new DbIntColumn("project"), new DbIntColumn("release"), new DbTextColumn("name"), new DbTextColumn("description"), new DbIntColumn("type"), new DbIntColumn("state"), new DbIntColumn("priority"));
         }
 
         public int getProjectColumnIndex() {
             return 1;
         }
 
-        public int getNameColumnIndex() {
+        public int getReleaseColumnIndex() {
             return 2;
         }
 
-        public int getDescriptionColumnIndex() {
+        public int getNameColumnIndex() {
             return 3;
         }
 
-        public int getTypeColumnIndex() {
+        public int getDescriptionColumnIndex() {
             return 4;
         }
 
-        public int getStateColumnIndex() {
+        public int getTypeColumnIndex() {
             return 5;
         }
 
-        public int getPriorityColumnIndex() {
+        public int getStateColumnIndex() {
             return 6;
+        }
+
+        public int getPriorityColumnIndex() {
+            return 7;
         }
     }
 

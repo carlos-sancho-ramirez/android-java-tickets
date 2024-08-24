@@ -8,16 +8,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import sword.tickets.android.DbManager;
 import sword.tickets.android.R;
 import sword.tickets.android.db.ProjectId;
+import sword.tickets.android.db.ReleaseId;
 import sword.tickets.android.db.TicketId;
 import sword.tickets.android.db.TicketIdBundler;
 import sword.tickets.android.layout.TicketLayoutForActivity;
 import sword.tickets.android.models.Ticket;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
@@ -50,7 +51,7 @@ public final class TicketActivity extends Activity {
     }
 
     private void updateModelAndUi() {
-        final Ticket<ProjectId> ticket = DbManager.getInstance().getManager().getTicket(getTicketId());
+        final Ticket<ProjectId, ReleaseId> ticket = DbManager.getInstance().getManager().getTicket(getTicketId());
         if (ticket == null) {
             _layout.ticketNotFoundErrorTextView().setVisibility(View.VISIBLE);
         }

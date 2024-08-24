@@ -23,7 +23,9 @@
     <string name="ticketTypeIssue">Issue</string>
     <string name="ticketTypeModification">Modification</string>
     <string name="projectPickerActivityTitle">Select a project</string>
+    <string name="releaseTypePickerActivityTitle">Select a release type</string>
     <string name="ticketSetPickerActivityTitle">Select tickets</string>
+    <string name="releaseAnchorPickerActivityTitle">Select anchor</string>
     <string name="ticketStateNotStarted">Not started</string>
     <string name="ticketStateInProgress">In progress</string>
     <string name="ticketStateAbandoned">Abandoned</string>
@@ -31,4 +33,11 @@
     <string name="noReleasesPlaceholderText">No releases yet</string>
     <string name="ticketsTabText">Tickets</string>
     <string name="releasesTabText">Releases</string>
+    <string name="releaseTypeMajor">Major</string>
+    <string name="releaseTypeMinor">Minor</string>
+    <string name="releaseTypeBugFix">Bug Fix</string>
+    <string name="releaseTypeMajorInfo">A major version implies that the new release will include changes that make this new version incompatible with previous versions.</string>
+    <string name="releaseTypeMinorInfo">A minor version implies that the new release will include new additional capabilities while ensuring compatibility with previous version.\n\nIt means that 3rd party software using this software should not notice that the version has changed (according to the Liskov substitution principle), and ideally users should recognise the UI even if new buttons/controls are now available.</string>
+    <string name="releaseTypeBugFixInfo">Choose the option if the new release will keep exactly the same API exposed to 3rd party software, and ideally the same UI exposed to users.\n\nThis is the ideal option when the release just include bug fixes, or performance improvements.</string>
+    <string name="createReleaseButtonText">Create release</string>
 </resources>
