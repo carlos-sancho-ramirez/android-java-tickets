@@ -3,8 +3,6 @@ package sword.tickets.android;
 import android.content.Context;
 import android.content.Intent;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.Lifecycle;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.Espresso;
@@ -27,30 +25,13 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withChild;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static org.junit.Assert.fail;
 import static sword.tickets.android.DbManagerTestUtils.withMemoryDatabase;
+import static sword.tickets.android.EspressoUtils.assertScenarioDestroyed;
 import static sword.tickets.android.EspressoUtils.clickIfRoomMenuItem;
 import static sword.tickets.android.db.DbFixtures.newProject;
 import static sword.tickets.android.db.DbFixtures.newTicket;
 
 public final class TicketManipulationTest {
-
-    private void assertScenarioDestroyed(@NonNull ActivityScenario<MainActivity> scenario) {
-        int retrials = 15;
-        while (scenario.getState() != Lifecycle.State.DESTROYED) {
-            if (--retrials >= 0) {
-                try {
-                    Thread.sleep(200);
-                }
-                catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            else {
-                fail("Scenario is not reaching the DESTROYED state");
-            }
-        }
-    }
 
     @Test
     public void createFirstTicket() {
