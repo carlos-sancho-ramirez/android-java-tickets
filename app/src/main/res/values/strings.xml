@@ -40,4 +40,6 @@
     <string name="releaseTypeMinorInfo">A minor version implies that the new release will include new additional capabilities while ensuring compatibility with previous version.\n\nIt means that 3rd party software using this software should not notice that the version has changed (according to the Liskov substitution principle), and ideally users should recognise the UI even if new buttons/controls are now available.</string>
     <string name="releaseTypeBugFixInfo">Choose the option if the new release will keep exactly the same API exposed to 3rd party software, and ideally the same UI exposed to users.\n\nThis is the ideal option when the release just include bug fixes, or performance improvements.</string>
     <string name="createReleaseButtonText">Create release</string>
+    <string name="noProjectPlaceholder">There are no tickets in the database yet.\n\nStart by creating your first ticket.</string>
+    <string name="noProjectPlaceholderNewTicketButton">Create Ticket</string>
 </resources>

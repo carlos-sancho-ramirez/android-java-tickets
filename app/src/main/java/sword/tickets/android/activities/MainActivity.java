@@ -31,10 +31,11 @@ import sword.tickets.android.db.TicketId;
 import sword.tickets.android.db.TicketIdBundler;
 import sword.tickets.android.db.TicketsDbManagerImpl;
 import sword.tickets.android.layout.MainLayoutForActivity;
+import sword.tickets.android.layout.NoProjectsPlaceholderLayout;
 import sword.tickets.android.layout.ReleasesTabLayout;
 import sword.tickets.android.layout.TicketsTabLayout;
-import sword.tickets.android.list.adapters.MainTicketsAdapter;
 import sword.tickets.android.list.adapters.MainReleasesAdapter;
+import sword.tickets.android.list.adapters.MainTicketsAdapter;
 import sword.tickets.android.list.adapters.ProjectPickerAdapter;
 import sword.tickets.android.list.models.TicketEntry;
 import sword.tickets.android.models.Release;
@@ -62,6 +63,7 @@ public final class MainActivity extends Activity {
 
     private TicketsTabLayout _ticketsTabLayout;
     private ReleasesTabLayout _releasesTabLayout;
+    private NoProjectsPlaceholderLayout _noProjectsLayout;
 
     private MainTicketsAdapter _ticketsAdapter;
     private State _state;
@@ -201,33 +203,34 @@ public final class MainActivity extends Activity {
         }
         else {
             _layout.ticketsTab().setSelected(true);
-            _ticketsTabLayout = TicketsTabLayout.attach(_layout.tabContent());
+
             if (projectCount == 0) {
-                _tickets = ImmutableList.empty();
-            }
-            else if (projectCount == 1) {
-                _tickets = manager.getAllTicketReferences();
-            }
-            else {
-                _tickets = manager.getAllTicketReferencesForProject(_selectedProjectId);
-            }
-            ensureValidState(_tickets != null);
-
-            _ticketsAdapter = new MainTicketsAdapter();
-            final ListView listView = _ticketsTabLayout.listView();
-            listView.setAdapter(_ticketsAdapter);
-
-            _ticketsTabLayout.listViewFrame().setLongClickListener(new LongTouchListener());
-
-            if (_state.selected.isEmpty()) {
-                _ticketsAdapter.setEntries(_tickets.map(ticket -> new TicketEntry(ticket.name, false)));
+                _noProjectsLayout = NoProjectsPlaceholderLayout.attach(_layout.tabContent());
+                _noProjectsLayout.newTicketButton().setOnClickListener(v ->
+                        Intentions.createTicket(this, REQUEST_CODE_NEW_TICKET));
             }
             else {
-                _ticketsAdapter.setEntries(_tickets.indexes().map(position -> new TicketEntry(_tickets.valueAt(position).name, _state.selected.contains(position))));
+                _ticketsTabLayout = TicketsTabLayout.attach(_layout.tabContent());
+                _tickets = (projectCount == 1)? manager.getAllTicketReferences() :
+                        manager.getAllTicketReferencesForProject(_selectedProjectId);
+                ensureValidState(_tickets != null);
 
-                startActionMode(new ActionModeCallback());
-                if (_state.displayingDeleteConfirmationDialog) {
-                    displayDeleteConfirmationDialog();
+                _ticketsAdapter = new MainTicketsAdapter();
+                final ListView listView = _ticketsTabLayout.listView();
+                listView.setAdapter(_ticketsAdapter);
+
+                _ticketsTabLayout.listViewFrame().setLongClickListener(new LongTouchListener());
+
+                if (_state.selected.isEmpty()) {
+                    _ticketsAdapter.setEntries(_tickets.map(ticket -> new TicketEntry(ticket.name, false)));
+                }
+                else {
+                    _ticketsAdapter.setEntries(_tickets.indexes().map(position -> new TicketEntry(_tickets.valueAt(position).name, _state.selected.contains(position))));
+
+                    startActionMode(new ActionModeCallback());
+                    if (_state.displayingDeleteConfirmationDialog) {
+                        displayDeleteConfirmationDialog();
+                    }
                 }
             }
         }
@@ -270,6 +273,17 @@ public final class MainActivity extends Activity {
             }
 
             _tickets = (projectCount == 1)? manager.getAllTicketReferences() : manager.getAllTicketReferencesForProject(_selectedProjectId);
+            ensureValidState(_tickets != null);
+
+            if (_ticketsTabLayout == null) {
+                _layout.tabContent().removeAllViews();
+                _ticketsTabLayout = TicketsTabLayout.attach(_layout.tabContent());
+
+                _ticketsAdapter = new MainTicketsAdapter();
+                final ListView listView = _ticketsTabLayout.listView();
+                listView.setAdapter(_ticketsAdapter);
+            }
+
             _ticketsAdapter.setEntries(_tickets.map(ticket -> new TicketEntry(ticket.name, false)));
             _lastDataVersion = DbManager.getInstance().getDatabase().getDataVersion();
             _dataInSync = true;

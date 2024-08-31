@@ -6,4 +6,6 @@
     <dimen name="ticketFieldMarginStart">4dp</dimen>
     <dimen name="minTouchable">48dp</dimen>
     <dimen name="releaseTypePickerPadding">16dp</dimen>
+    <dimen name="placeholderPadding">24dp</dimen>
+    <dimen name="placeholderSpacing">8dp</dimen>
 </resources>
