@@ -15,7 +15,6 @@ import sword.tickets.android.activities.MainActivity;
 import sword.tickets.android.db.TicketsDbSchema.TicketType;
 
 import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.longClick;
 import static androidx.test.espresso.action.ViewActions.replaceText;
@@ -30,6 +29,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.junit.Assert.fail;
 import static sword.tickets.android.DbManagerTestUtils.withMemoryDatabase;
+import static sword.tickets.android.EspressoUtils.clickIfRoomMenuItem;
 import static sword.tickets.android.db.DbFixtures.newProject;
 import static sword.tickets.android.db.DbFixtures.newTicket;
 
@@ -58,8 +58,7 @@ public final class TicketManipulationTest {
             final Context targetContext = ApplicationProvider.getApplicationContext();
             final Intent intent = new Intent(targetContext, MainActivity.class);
             try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(intent)) {
-                openActionBarOverflowOrOptionsMenu(targetContext);
-                onView(withText(R.string.optionNew)).perform(click());
+                clickIfRoomMenuItem(R.id.optionNew, R.string.optionNew);
 
                 onView(withId(R.id.projectNameField)).perform(scrollTo(), click(), typeText("My project"));
                 Espresso.pressBack(); // Closes the keyboard
@@ -104,12 +103,10 @@ public final class TicketManipulationTest {
             try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(intent)) {
                 onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My important issue")))));
 
-                openActionBarOverflowOrOptionsMenu(targetContext);
-                onView(withText(R.string.optionNew)).perform(click());
+                clickIfRoomMenuItem(R.id.optionNew, R.string.optionNew);
                 onView(withText("My project")).check(matches(isDisplayed()));
 
-                openActionBarOverflowOrOptionsMenu(targetContext);
-                onView(withText(R.string.optionNew)).perform(click());
+                clickIfRoomMenuItem(R.id.optionNew, R.string.optionNew);
 
                 onView(withId(R.id.projectNameField)).perform(scrollTo(), click(), typeText("My new project"));
                 Espresso.pressBack(); // Closes the keyboard
@@ -158,8 +155,7 @@ public final class TicketManipulationTest {
             try (ActivityScenario<MainActivity> scenario = ActivityScenario.launch(intent)) {
                 onView(withId(R.id.listView)).check(matches(withChild(withChild(withText("My important issue")))));
 
-                openActionBarOverflowOrOptionsMenu(targetContext);
-                onView(withText(R.string.optionNew)).perform(click());
+                clickIfRoomMenuItem(R.id.optionNew, R.string.optionNew);
                 onView(withText("My project")).perform(click());
 
                 onView(withId(R.id.ticketNameField)).perform(scrollTo(), click(), typeText("My new issue"));
@@ -197,8 +193,7 @@ public final class TicketManipulationTest {
                 onView(withId(R.id.ticketNameField)).check(matches(withText("My isue")));
                 onView(withId(R.id.ticketDescriptionField)).check(matches(withText("Ths is my new ticket")));
 
-                openActionBarOverflowOrOptionsMenu(targetContext);
-                onView(withText(R.string.optionEdit)).perform(click());
+                clickIfRoomMenuItem(R.id.optionEdit, R.string.optionEdit);
 
                 onView(withId(R.id.ticketNameField)).perform(scrollTo(), click(), replaceText("My issue"));
                 onView(withId(R.id.ticketDescriptionField)).perform(scrollTo(), click(), replaceText("This is my new ticket"));
