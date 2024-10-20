@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "sword.tickets.android"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "sword.tickets.android"
         minSdk = 34
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 

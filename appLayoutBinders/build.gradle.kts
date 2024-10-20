@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "sword.tickets.android.app_layout_binders"
-    compileSdk = 34
+    compileSdk = 35
 }
 
 dependencies {
