@@ -22,6 +22,7 @@ import sword.tickets.android.models.Ticket;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
+import static sword.tickets.android.activities.ActivityUtils.applyMainInsets;
 
 public final class EditTicketActivity extends Activity {
 
@@ -48,6 +49,7 @@ public final class EditTicketActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final EditTicketLayoutForActivity layout = EditTicketLayoutForActivity.attach(this);
+        applyMainInsets(layout.scrollView());
 
         final TicketId ticketId = getTicketId();
         final Ticket<ProjectId, ReleaseId> ticket = DbManager.getInstance().getManager().getTicket(ticketId);

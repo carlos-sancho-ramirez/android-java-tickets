@@ -20,6 +20,7 @@ import sword.tickets.android.models.Release;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
+import static sword.tickets.android.activities.ActivityUtils.applyMainInsets;
 
 public final class ReleaseAnchorPickerActivity extends Activity {
 
@@ -62,6 +63,7 @@ public final class ReleaseAnchorPickerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final ProjectPickerLayoutForActivity layout = ProjectPickerLayoutForActivity.attach(this);
+        applyMainInsets(layout.listView());
 
         _controller = getController();
         final ImmutableMap<ReleaseId, Release> releases = DbManager.getInstance().getManager().getAllReleasesForProject(_controller.getProjectId());

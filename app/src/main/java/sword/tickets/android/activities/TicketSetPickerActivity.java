@@ -22,6 +22,7 @@ import sword.tickets.android.models.TicketReference;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
+import static sword.tickets.android.activities.ActivityUtils.applyMainInsets;
 
 public final class TicketSetPickerActivity extends Activity {
 
@@ -53,6 +54,8 @@ public final class TicketSetPickerActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final TicketSetPickerLayoutForActivity layout = TicketSetPickerLayoutForActivity.attach(this);
+        applyMainInsets(layout.mainContainer());
+
         final Controller controller = getController();
         final ImmutableSet<TicketReference<TicketId>> tickets = DbManager.getInstance().getManager().getAllTicketReferencesWithoutReleaseForProject(controller.getProjectId());
 

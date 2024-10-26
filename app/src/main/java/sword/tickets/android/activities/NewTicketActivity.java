@@ -16,6 +16,7 @@ import sword.tickets.android.list.adapters.TicketTypeAdapter;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
+import static sword.tickets.android.activities.ActivityUtils.applyMainInsets;
 
 public final class NewTicketActivity extends android.app.Activity {
 
@@ -41,6 +42,8 @@ public final class NewTicketActivity extends android.app.Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final NewTicketLayoutForActivity layout = NewTicketLayoutForActivity.attach(this);
+        applyMainInsets(layout.scrollView());
+
         final EditText nameField = layout.ticketNameField();
         final Spinner typeField = layout.ticketTypeField();
         final TicketTypeAdapter adapter = new TicketTypeAdapter();

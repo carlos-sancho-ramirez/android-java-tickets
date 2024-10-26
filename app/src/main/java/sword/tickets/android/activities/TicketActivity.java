@@ -22,6 +22,7 @@ import sword.tickets.android.models.Ticket;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
+import static sword.tickets.android.activities.ActivityUtils.applyMainInsets;
 import static sword.tickets.android.list.adapters.TicketStatePickerAdapter.STATE_TEXTS;
 
 public final class TicketActivity extends Activity {
@@ -68,6 +69,7 @@ public final class TicketActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         _layout = TicketLayoutForActivity.attach(this);
+        applyMainInsets(_layout.mainContainer());
         updateModelAndUi();
     }
 

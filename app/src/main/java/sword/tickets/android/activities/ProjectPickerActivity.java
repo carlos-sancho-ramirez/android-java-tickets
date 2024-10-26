@@ -19,6 +19,7 @@ import sword.tickets.android.list.adapters.ProjectPickerAdapter;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
+import static sword.tickets.android.activities.ActivityUtils.applyMainInsets;
 
 public final class ProjectPickerActivity extends Activity {
 
@@ -47,10 +48,11 @@ public final class ProjectPickerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final ProjectPickerLayoutForActivity layout = ProjectPickerLayoutForActivity.attach(this);
+        final ListView listView = layout.listView();
+        applyMainInsets(listView);
 
         _controller = getController();
         _projects = DbManager.getInstance().getManager().getAllProjects();
-        final ListView listView = layout.listView();
         listView.setAdapter(new ProjectPickerAdapter(_projects.toList()));
         listView.setOnItemClickListener((parent, view, position, id) ->
                 _controller.pickProject(this, _projects.keyAt(position)));

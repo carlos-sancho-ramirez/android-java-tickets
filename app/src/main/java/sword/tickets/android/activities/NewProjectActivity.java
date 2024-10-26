@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import sword.tickets.android.layout.NewProjectLayoutForActivity;
 
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
+import static sword.tickets.android.activities.ActivityUtils.applyMainInsets;
 
 public final class NewProjectActivity extends Activity {
 
@@ -35,6 +36,7 @@ public final class NewProjectActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final NewProjectLayoutForActivity layout = NewProjectLayoutForActivity.attach(this);
+        applyMainInsets(layout.scrollView());
 
         layout.nextButton().setOnClickListener(v ->
                 getController().complete(this, layout.projectNameField().getText().toString()));

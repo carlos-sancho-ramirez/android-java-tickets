@@ -45,6 +45,7 @@ import sword.tickets.android.view.ListViewFrameView;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
+import static sword.tickets.android.activities.ActivityUtils.applyMainInsets;
 
 public final class MainActivity extends Activity {
 
@@ -78,6 +79,7 @@ public final class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         _layout = MainLayoutForActivity.attach(this);
+        applyMainInsets(_layout.mainContainer());
 
         if (savedInstanceState == null) {
             _state = new State(MutableBitSet.empty());

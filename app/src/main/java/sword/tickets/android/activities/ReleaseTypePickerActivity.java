@@ -15,6 +15,7 @@ import sword.tickets.android.layout.ReleaseTypePickerLayoutForActivity;
 
 import static sword.tickets.android.PreconditionUtils.ensureNonNull;
 import static sword.tickets.android.PreconditionUtils.ensureValidState;
+import static sword.tickets.android.activities.ActivityUtils.applyMainInsets;
 
 public final class ReleaseTypePickerActivity extends Activity {
 
@@ -42,6 +43,7 @@ public final class ReleaseTypePickerActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final ReleaseTypePickerLayoutForActivity layout = ReleaseTypePickerLayoutForActivity.attach(this);
+        applyMainInsets(layout.mainContainer());
 
         _controller = getController();
         final TextView infoBox = layout.releaseTypeInfoBox();
